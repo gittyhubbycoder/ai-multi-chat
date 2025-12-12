@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-AI Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-bounce-1 { animation: bounce 1s infinite 0ms; }
+        .animate-bounce-2 { animation: bounce 1s infinite 150ms; }
+        .animate-bounce-3 { animation: bounce 1s infinite 300ms; }
+        .markdown-content h2 { font-size: 1.5rem; font-weight: bold; margin: 1rem 0; }
+        .markdown-content p { margin-bottom: 1rem; }
+        .markdown-content strong { font-weight: bold; }
+        .markdown-content code { background: rgba(0,0,0,0.3); padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-family: monospace; }
+        .markdown-content pre { background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin: 1rem 0; }
+        .markdown-content ul { list-style: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .markdown-content li { margin-bottom: 0.5rem; }
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        marked.setOptions({ breaks: true, gfm: true });
+
+        // ⚠️ REPLACE THESE WITH YOUR CREDENTIALS
+        const SUPABASE_URL = 'https://dagyncvbqirgnydsxahf.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhZ3luY3ZicWlyZ255ZHN4YWhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzU0MTIsImV4cCI6MjA4MTA1MTQxMn0.SzYiLxkdrtjUEi4g-9FwwdWSpyUewfEqrSbazrNGW1E';
+        const ADMIN_EMAIL = 'jasimd931@gmail.com';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const models = [
+            { id: 'cerebras', name: 'Cerebras Llama 3.3 70B', provider: 'cerebras', endpoint: 'llama3.3-70b' },
+            { id: 'groq', name: 'Groq Llama 3.3 70B', provider: 'groq', endpoint: 'llama-3.3-70b-versatile' },
+            { id: 'deepseek', name: 'DeepSeek V3', provider: 'deepseek', endpoint: 'deepseek-chat' },
+        ];
+
+        function App() {
+            const [session, setSession] = useState(null);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [isSignup, setIsSignup] = useState(false);
+            const [chats, setChats] = useState([]);
+            const [currentChatId, setCurrentChatId] = useState(null);
+            const [input, setInput] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [apiKeys, setApiKeys] = useState({});
+            const [showSettings, setShowSettings] = useState(false);
+            const messagesEndRef = useRef(null);
+
+            const currentChat = chats.find(c => c.id === currentChatId);
+
+            useEffect(() => {
+                supabase.auth.getSession().then(({ data: { session } }) => {
+                    setSession(session);
+                    if (session) loadUserData(session.user.id);
+                });
+
+                supabase.auth.onAuthStateChange((_event, session) => {
+                    setSession(session);
+                    if (session) loadUserData(session.user.id);
+                });
+            }, []);
+
+            useEffect(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }, [currentChat?.messages]);
+
+            const loadUserData = async (userId) => {
+                const { data: chatsData } = await supabase.from('chats').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+                if (chatsData?.length > 0) {
+                    setChats(chatsData);
+                    setCurrentChatId(chatsData[0].id);
+                } else {
+                    createNewChat(userId);
+                }
+
+                const { data: keysData } = await supabase.from('api_keys').select('*').eq('user_id', userId);
+                const keysObj = {};
+                keysData?.forEach(k => { keysObj[k.provider] = k.key_value; });
+                setApiKeys(keysObj);
+            };
+
+            const createNewChat = async (userId) => {
+                const { data } = await supabase.from('chats').insert([{ user_id: userId || session.user.id, name: 'New Chat', model: 'cerebras', messages: [] }]).select().single();
+                if (data) {
+                    setChats([data, ...chats]);
+                    setCurrentChatId(data.id);
+                }
+            };
+
+            const handleAuth = async () => {
+                try {
+                    if (isSignup) {
+                        const { error } = await supabase.auth.signUp({ email, password });
+                        if (error) throw error;
+                        alert('Account created! Please log in.');
+                        setIsSignup(false);
+                    } else {
+                        const { error } = await supabase.auth.signInWithPassword({ email, password });
+                        if (error) throw error;
+                    }
+                } catch (error) {
+                    alert(error.message);
+                }
+            };
+
+            const sendMessage = async () => {
+                if (!input.trim() || !currentChat) return;
+
+                const model = models.find(m => m.id === currentChat.model);
+                const apiKey = apiKeys[model.provider];
+
+                if (!apiKey) {
+                    alert(`Please add ${model.provider} API key in settings`);
+                    setShowSettings(true);
+                    return;
+                }
+
+                const userMsg = { role: 'user', content: input, timestamp: new Date().toISOString() };
+                const newMsgs = [...(currentChat.messages || []), userMsg];
+                
+                setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs } : c));
+                setInput('');
+                setLoading(true);
+
+                try {
+                    const history = newMsgs.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
+                    let response;
+
+                    if (model.provider === 'cerebras') {
+                        const res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                            body: JSON.stringify({ model: model.endpoint, messages: history, max_tokens: 4096 })
+                        });
+                        const data = await res.json();
+                        response = data.choices[0].message.content;
+                    } else if (model.provider === 'groq') {
+                        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                            body: JSON.stringify({ model: model.endpoint, messages: history, max_tokens: 4096 })
+                        });
+                        const data = await res.json();
+                        response = data.choices[0].message.content;
+                    } else if (model.provider === 'deepseek') {
+                        const res = await fetch('https://api.deepseek.com/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+                            body: JSON.stringify({ model: model.endpoint, messages: history, max_tokens: 4096 })
+                        });
+                        const data = await res.json();
+                        response = data.choices[0].message.content;
+                    }
+
+                    const assistantMsg = { role: 'assistant', content: response, timestamp: new Date().toISOString() };
+                    const updatedMsgs = [...newMsgs, assistantMsg];
+
+                    await supabase.from('chats').update({ messages: updatedMsgs }).eq('id', currentChatId);
+                    setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: updatedMsgs } : c));
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const saveApiKeys = async (keys) => {
+                for (const [provider, keyValue] of Object.entries(keys)) {
+                    if (!keyValue) continue;
+                    await supabase.from('api_keys').upsert({ user_id: session.user.id, provider, key_value: keyValue }, { onConflict: 'user_id,provider' });
+                }
+                setApiKeys(keys);
+                alert('Keys saved!');
+            };
+
+            if (!session) {
+                return (
+                    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+                        <div className="bg-gray-800 p-8 rounded-2xl w-96 border border-gray-700">
+                            <h1 className="text-3xl font-bold text-white mb-6 text-center">Multi-AI Chat</h1>
+                            <div className="space-y-4">
+                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email"
+                                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg" />
+                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password"
+                                    onKeyPress={(e) => e.key === 'Enter' && handleAuth()}
+                                    className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg" />
+                                <button onClick={handleAuth} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg">
+                                    {isSignup ? 'Sign Up' : 'Login'}
+                                </button>
+                                <button onClick={() => setIsSignup(!isSignup)} className="w-full text-blue-400 text-sm">
+                                    {isSignup ? 'Have an account? Login' : 'Need an account? Sign up'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (showSettings) {
+                const [cerebras, setCerebras] = useState(apiKeys.cerebras || '');
+                const [groq, setGroq] = useState(apiKeys.groq || '');
+                const [deepseek, setDeepseek] = useState(apiKeys.deepseek || '');
+
+                return (
+                    <div className="min-h-screen bg-gray-900 text-white p-8">
+                        <div className="max-w-2xl mx-auto">
+                            <button onClick={() => setShowSettings(false)} className="text-blue-400 mb-4">← Back</button>
+                            <h1 className="text-3xl font-bold mb-6">Settings</h1>
+                            <div className="space-y-4 bg-gray-800 p-6 rounded-2xl">
+                                <div>
+                                    <label className="block mb-2">Cerebras API Key</label>
+                                    <input type="password" value={cerebras} onChange={(e) => setCerebras(e.target.value)}
+                                        className="w-full bg-gray-700 px-4 py-3 rounded-lg" />
+                                </div>
+                                <div>
+                                    <label className="block mb-2">Groq API Key</label>
+                                    <input type="password" value={groq} onChange={(e) => setGroq(e.target.value)}
+                                        className="w-full bg-gray-700 px-4 py-3 rounded-lg" />
+                                </div>
+                                <div>
+                                    <label className="block mb-2">DeepSeek API Key</label>
+                                    <input type="password" value={deepseek} onChange={(e) => setDeepseek(e.target.value)}
+                                        className="w-full bg-gray-700 px-4 py-3 rounded-lg" />
+                                </div>
+                                <button onClick={() => saveApiKeys({ cerebras, groq, deepseek })}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg">Save Keys</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="flex flex-col h-screen bg-gray-900 text-white">
+                    <div className="bg-gray-800 border-b border-gray-700 p-4 flex justify-between items-center">
+                        <div>
+                            <div className="font-bold">{currentChat?.name || 'Chat'}</div>
+                            <div className="text-xs text-gray-400">{session.user.email}</div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button onClick={() => createNewChat()} className="px-4 py-2 bg-blue-600 rounded-lg">New Chat</button>
+                            <button onClick={() => setShowSettings(true)} className="px-4 py-2 bg-gray-700 rounded-lg">Settings</button>
+                            <button onClick={() => supabase.auth.signOut()} className="px-4 py-2 bg-gray-700 rounded-lg">Logout</button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                        {currentChat?.messages?.map((msg, idx) => (
+                            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user' ? 'bg-blue-600' : 'bg-gray-800'}`}>
+                                    {msg.role === 'user' ? (
+                                        <div className="whitespace-pre-wrap">{msg.content}</div>
+                                    ) : (
+                                        <div className="markdown-content" dangerouslySetInnerHTML={{ __html: marked.parse(msg.content) }} />
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className="flex justify-start">
+                                <div className="bg-gray-800 rounded-2xl p-4">
+                                    <div className="flex gap-2">
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-1" />
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-2" />
+                                        <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-3" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    <div className="bg-gray-800 border-t border-gray-700 p-4">
+                        <div className="flex gap-2">
+                            <input type="text" value={input} onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                                placeholder="Type a message..." disabled={loading}
+                                className="flex-1 bg-gray-700 text-white px-4 py-3 rounded-lg" />
+                            <button onClick={sendMessage} disabled={loading || !input.trim()}
+                                className="px-6 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">Send</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    </script>
+</body>
+</html>
