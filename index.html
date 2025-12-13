@@ -203,7 +203,7 @@ method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${enhancerKey}`},
 body:JSON.stringify({
 model:'llama3.3-70b',
-messages:[{role:'user',content:`Improve this prompt to be more detailed and effective: "${input}"`}],
+messages:[{role:'user',content:`Improve this prompt to be more detailed and effective (ONLY GIVE THE IMPROVED PROMPT AND NOTHING ELSE): "${input}"`}],
 max_tokens:500
 })
 });
