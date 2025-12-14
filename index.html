@@ -259,10 +259,10 @@ messagesEndRef.current?.scrollIntoView({behavior:'smooth'});
 // Load compare mode settings from chat
 useEffect(()=>{
 if(currentChat){
-setCompareMode(currentChat.compareMode||false);
-setSelectedModels(currentChat.selectedModels||[]);
-setCompareResponses(currentChat.compareResponses||{});
-setFocusedModel(currentChat.focusedModel||null);
+setCompareMode(currentChat.compare_mode||false);
+setSelectedModels(currentChat.selected_models||[]);
+setCompareResponses(currentChat.compare_responses||{});
+setFocusedModel(currentChat.focused_model||null);
 }
 },[currentChatId]);
 const loadUserData=async(userId)=>{
@@ -285,10 +285,10 @@ user_id:userId||session.user.id,
 name:'New Chat',
 model:'cerebras',
 messages:[],
-compareMode:false,
-selectedModels:[],
-compareResponses:{},
-focusedModel:null
+compare_mode:false,
+selected_models:[],
+compare_responses:{},
+focused_model:null
 }]).select().single();
 if(data){
 setChats([data,...chats]);
@@ -311,9 +311,9 @@ setChats(chats.map(c=>c.id===chatId?{...c,name:newName}:c));
 setEditingChatId(null);
 };
 
-const updateChatModel=async(model)=>{
-await supabase.from('chats').update({model}).eq('id',currentChatId);
-setChats(chats.map(c=>c.id===currentChatId?{...c,model}:c));
+const updateChatModel=async(modelId)=>{
+await supabase.from('chats').update({model:modelId}).eq('id',currentChatId);
+setChats(chats.map(c=>c.id===currentChatId?{...c,model:modelId}:c));
 };
 
 const toggleCompareMode=async()=>{
@@ -327,17 +327,17 @@ setCompareResponses({});
 setFocusedModel(null);
 }
 await supabase.from('chats').update({
-compareMode:newCompareMode,
-selectedModels:newCompareMode?['cerebras','groq']:[],
-compareResponses:{},
-focusedModel:null
+compare_mode:newCompareMode,
+selected_models:newCompareMode?['cerebras','groq']:[],
+compare_responses:{},
+focused_model:null
 }).eq('id',currentChatId);
 setChats(chats.map(c=>c.id===currentChatId?{
 ...c,
-compareMode:newCompareMode,
-selectedModels:newCompareMode?['cerebras','groq']:[],
-compareResponses:{},
-focusedModel:null
+compare_mode:newCompareMode,
+selected_models:newCompareMode?['cerebras','groq']:[],
+compare_responses:{},
+focused_model:null
 }:c));
 };
 
@@ -396,7 +396,7 @@ method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${enhancerKey}`},
 body:JSON.stringify({
 model:'llama3.3-70b',
-messages:[{role:'user',content:`Improve this prompt to be more detailed and effective: "${input}"`}],
+messages:[{role:'user',content:`Improve this prompt to be more detailed and effective (ONLY SHOW THE PROMPT AND NOTHING ELSE!!!): "${input}"`}],
 max_tokens:500
 })
 });
@@ -549,12 +549,12 @@ const updatedCompareResponses={...compareResponses,...newResponses};
 setCompareResponses(updatedCompareResponses);
 
 await supabase.from('chats').update({
-compareResponses:updatedCompareResponses
+compare_responses:updatedCompareResponses
 }).eq('id',currentChatId);
 
 setChats(chats.map(c=>c.id===currentChatId?{
 ...c,
-compareResponses:updatedCompareResponses
+compare_responses:updatedCompareResponses
 }:c));
 
 setLoading(false);
@@ -562,8 +562,8 @@ setLoading(false);
 
 const focusOnModel=async(modelId)=>{
 setFocusedModel(modelId);
-await supabase.from('chats').update({focusedModel:modelId}).eq('id',currentChatId);
-setChats(chats.map(c=>c.id===currentChatId?{...c,focusedModel:modelId}:c));
+await supabase.from('chats').update({focused_model:modelId}).eq('id',currentChatId);
+setChats(chats.map(c=>c.id===currentChatId?{...c,focused_model:modelId}:c));
 };
 const analyzeBias=async()=>{
 if(Object.keys(compareResponses).length===0)return;
@@ -732,7 +732,7 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 )}
 </div>
 <div className="text-xs text-gray-400 mt-1">{models.find(m=>m.id===chat.model)?.name}</div>
-{chat.compareMode&&<div className="text-xs text-purple-400 mt-1">🔄 Compare Mode</div>}
+{chat.compare_mode&&<div className="text-xs text-purple-400 mt-1">🔄 Compare Mode</div>}
 </div>
 ))}
 </div>
