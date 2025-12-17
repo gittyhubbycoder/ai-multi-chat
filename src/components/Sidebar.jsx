@@ -45,21 +45,23 @@ export default function Sidebar({
         transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="p-4 border-b border-white/10 flex items-center justify-between">
-          <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Chats
           </h2>
           <div className="flex items-center gap-2">
             <button
               onClick={onNewChat}
-              className="glass-button-secondary p-2 rounded-lg"
+              className="glass-button-secondary p-2.5 rounded-lg"
               title="New Chat"
+              aria-label="New Chat"
             >
               <PlusIcon />
             </button>
             <button
               onClick={onClose}
-              className="glass-button-secondary p-2 rounded-lg md:hidden"
+              className="glass-button-secondary p-2.5 rounded-lg md:hidden"
+              aria-label="Close sidebar"
             >
               <CloseIcon />
             </button>
@@ -95,7 +97,7 @@ export default function Sidebar({
                   autoFocus
                 />
               ) : (
-                <span className="flex-1 truncate text-sm">{chat.name}</span>
+                <span className="flex-1 truncate text-base font-medium">{chat.name}</span>
               )}
               
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -121,20 +123,20 @@ export default function Sidebar({
           ))}
         </div>
 
-        <div className="p-3 sm:p-4 border-t border-white/10 space-y-2">
-          <div className="text-xs text-white/40 truncate px-2 mb-2">
+        <div className="p-4 sm:p-5 border-t border-white/10 space-y-3">
+          <div className="text-sm text-white/50 truncate px-2 mb-1 font-medium">
             {userEmail}
           </div>
           <button
             onClick={onOpenSettings}
-            className="glass-button-secondary w-full py-2.5 sm:py-3 flex items-center justify-center gap-2 rounded-xl text-sm sm:text-base"
+            className="glass-button-secondary w-full py-3 flex items-center justify-center gap-2 rounded-xl text-base font-medium"
           >
             <SettingsIcon />
             <span>Settings</span>
           </button>
           <button
             onClick={onLogout}
-            className="glass-button-secondary w-full py-2.5 sm:py-3 flex items-center justify-center gap-2 rounded-xl text-red-400 hover:bg-red-500/10 text-sm sm:text-base"
+            className="glass-button-secondary w-full py-3 flex items-center justify-center gap-2 rounded-xl text-red-400 hover:bg-red-500/20 text-base font-medium transition-colors"
           >
             <LogOutIcon />
             <span>Logout</span>

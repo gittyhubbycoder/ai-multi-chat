@@ -18,8 +18,8 @@ export default function CompareView({
 
   if (selectedModels.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-white/50">
-        <p>Select models above to compare responses</p>
+      <div className="flex-1 flex items-center justify-center text-white/60">
+        <p className="text-base sm:text-lg font-medium">Select models above to compare responses</p>
       </div>
     );
   }
@@ -36,14 +36,14 @@ export default function CompareView({
             className="flex-1 flex flex-col border-b sm:border-b-0 sm:border-r border-white/10 last:border-b-0 last:border-r-0 min-w-0"
           >
             <div 
-              className="p-3 sm:p-4 border-b border-white/10 flex items-center gap-2 flex-shrink-0"
-              style={{ backgroundColor: `${model.color}15` }}
+              className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 flex-shrink-0 glass"
+              style={{ backgroundColor: `${model.color}20` }}
             >
               <span 
-                className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: model.color }}
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full flex-shrink-0 shadow-lg"
+                style={{ backgroundColor: model.color, boxShadow: `0 0 12px ${model.color}60` }}
               />
-              <span className="font-medium text-xs sm:text-sm truncate">{model.name}</span>
+              <span className="font-semibold text-sm sm:text-base truncate text-white">{model.name}</span>
             </div>
 
             <div 
@@ -51,11 +51,11 @@ export default function CompareView({
               className="flex-1 overflow-y-auto custom-scrollbar min-h-0"
             >
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-white/30 text-xs sm:text-sm p-4 text-center">
+                <div className="flex items-center justify-center h-full text-white/50 text-sm sm:text-base p-6 text-center font-medium">
                   Send a message to see {model.name}'s response
                 </div>
               ) : (
-                <div className="pb-4">
+                <div className="pb-6 pt-4">
                   {messages.map((msg, idx) => (
                     <Message 
                       key={idx} 

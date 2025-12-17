@@ -62,14 +62,14 @@ export default function ChatInput({
   };
 
   return (
-    <div className="p-3 sm:p-4 border-t border-white/10 bg-glass-dark">
+    <div className="p-4 sm:p-5 border-t border-white/10 glass-dark">
       {attachedFile && (
-        <div className="mb-3 flex items-center gap-2 p-2 sm:p-2.5 bg-white/10 rounded-lg w-fit max-w-full">
-          <span className="text-sm sm:text-base">📎</span>
-          <span className="text-xs sm:text-sm truncate">{attachedFile.name}</span>
+        <div className="mb-4 flex items-center gap-3 p-3 bg-white/10 rounded-lg w-fit max-w-full glass">
+          <span className="text-lg">📎</span>
+          <span className="text-sm sm:text-base font-medium truncate">{attachedFile.name}</span>
           <button
             onClick={() => setAttachedFile(null)}
-            className="p-1 hover:bg-white/10 rounded flex-shrink-0"
+            className="p-1.5 hover:bg-white/20 rounded-lg flex-shrink-0 transition-colors"
             aria-label="Remove file"
           >
             <CloseIcon />
@@ -77,7 +77,7 @@ export default function ChatInput({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex gap-2 sm:gap-3">
+      <form onSubmit={handleSubmit} className="flex gap-3">
         <div className="flex-1 relative">
           <textarea
             value={input}
@@ -86,11 +86,11 @@ export default function ChatInput({
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="glass-input w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-20 sm:pr-24 resize-none max-h-32 text-sm sm:text-base"
-            style={{ minHeight: '44px' }}
+            className="glass-input w-full px-4 py-3.5 pr-28 resize-none max-h-40 text-base"
+            style={{ minHeight: '52px' }}
           />
           
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 sm:gap-1">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
@@ -101,7 +101,7 @@ export default function ChatInput({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 sm:p-2 text-white/50 hover:text-white/80 transition-colors"
+              className="p-2 text-white/60 hover:text-white/90 transition-colors rounded-lg hover:bg-white/10"
               title="Attach file"
               aria-label="Attach file"
             >
@@ -112,7 +112,7 @@ export default function ChatInput({
                 type="button"
                 onClick={handleEnhance}
                 disabled={!input.trim() || enhancing}
-                className="p-1.5 sm:p-2 text-white/50 hover:text-indigo-400 transition-colors disabled:opacity-30"
+                className="p-2 text-white/60 hover:text-indigo-400 transition-colors disabled:opacity-30 rounded-lg hover:bg-white/10"
                 title="Enhance prompt"
                 aria-label="Enhance prompt"
               >
@@ -125,14 +125,14 @@ export default function ChatInput({
         <button
           type="submit"
           disabled={!input.trim() || disabled}
-          className="glass-button px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-1.5 sm:gap-2 flex-shrink-0"
+          className="glass-button flex items-center gap-2 flex-shrink-0"
         >
           <SendIcon />
-          <span className="hidden sm:inline text-sm sm:text-base">Send</span>
+          <span className="hidden sm:inline">Send</span>
         </button>
       </form>
 
-      <p className="text-xs text-white/30 mt-2 text-center hidden sm:block">
+      <p className="text-xs text-white/40 mt-3 text-center hidden sm:block">
         Press Enter to send, Shift+Enter for new line
       </p>
     </div>

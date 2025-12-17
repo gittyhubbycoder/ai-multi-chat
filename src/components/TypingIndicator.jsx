@@ -1,12 +1,12 @@
 export default function TypingIndicator() {
   return (
-    <div className="flex items-center gap-2 sm:gap-3 p-4 sm:p-6">
-      <div className="flex gap-1">
+    <div className="flex items-center gap-3 p-5 sm:p-6">
+      <div className="flex gap-2">
         <div className="typing-dot" />
         <div className="typing-dot" />
         <div className="typing-dot" />
       </div>
-      <span className="text-xs sm:text-sm text-white/50">AI is thinking...</span>
+      <span className="text-sm sm:text-base text-white/60 font-medium">AI is thinking...</span>
     </div>
   );
 }
