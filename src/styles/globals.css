@@ -118,12 +118,18 @@ body {
   background: rgba(255, 255, 255, 0.25);
 }
 
-.markdown-content h1 { font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 1rem; }
-.markdown-content h2 { font-size: 1.5rem; font-weight: 600; margin: 1.25rem 0 0.75rem; }
-.markdown-content h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem; }
+.markdown-content h1 { font-size: 1.5rem; font-weight: 700; margin: 1.5rem 0 1rem; }
+.markdown-content h2 { font-size: 1.25rem; font-weight: 600; margin: 1.25rem 0 0.75rem; }
+.markdown-content h3 { font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem; }
 .markdown-content p { margin-bottom: 1rem; line-height: 1.7; }
 .markdown-content strong { font-weight: 600; }
 .markdown-content em { font-style: italic; }
+
+@media (min-width: 640px) {
+  .markdown-content h1 { font-size: 1.75rem; }
+  .markdown-content h2 { font-size: 1.5rem; }
+  .markdown-content h3 { font-size: 1.25rem; }
+}
 
 .markdown-content code {
   background: rgba(0, 0, 0, 0.4);
@@ -252,10 +258,28 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-@media (max-width: 768px) {
+/* Improved spacing utilities */
+.space-y-chat > * + * {
+  margin-top: 1rem;
+}
+
+@media (max-width: 640px) {
   .mobile-hide { display: none; }
   
-  button, input {
+  button, input, textarea {
     min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  /* Better touch targets on mobile */
+  button {
+    padding: 0.625rem 1rem;
+  }
+}
+
+@media (min-width: 641px) {
+  /* Desktop optimizations */
+  .glass-card {
+    padding: 2rem;
   }
 }

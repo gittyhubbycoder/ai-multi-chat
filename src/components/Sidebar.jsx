@@ -66,7 +66,7 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 sm:p-3 space-y-1.5 sm:space-y-2">
           {chats.map(chat => (
             <div
               key={chat.id}
@@ -75,7 +75,7 @@ export default function Sidebar({
                 onClose?.();
               }}
               className={`
-                group flex items-center gap-3 p-3 rounded-xl cursor-pointer
+                group flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 rounded-xl cursor-pointer
                 transition-all duration-200
                 ${currentChatId === chat.id 
                   ? 'bg-indigo-500/20 border border-indigo-500/30' 
@@ -91,7 +91,7 @@ export default function Sidebar({
                   onBlur={saveEdit}
                   onKeyDown={(e) => e.key === 'Enter' && saveEdit()}
                   onClick={(e) => e.stopPropagation()}
-                  className="flex-1 bg-transparent border-b border-indigo-400 outline-none px-1"
+                  className="flex-1 bg-transparent border-b border-indigo-400 outline-none px-1 text-sm"
                   autoFocus
                 />
               ) : (
@@ -102,6 +102,7 @@ export default function Sidebar({
                 <button
                   onClick={(e) => startEditing(chat, e)}
                   className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
+                  aria-label="Edit chat name"
                 >
                   <EditIcon />
                 </button>
@@ -111,6 +112,7 @@ export default function Sidebar({
                     onDeleteChat(chat.id);
                   }}
                   className="p-1.5 hover:bg-red-500/20 rounded-lg transition-colors text-red-400"
+                  aria-label="Delete chat"
                 >
                   <TrashIcon />
                 </button>
@@ -119,20 +121,20 @@ export default function Sidebar({
           ))}
         </div>
 
-        <div className="p-4 border-t border-white/10 space-y-2">
+        <div className="p-3 sm:p-4 border-t border-white/10 space-y-2">
           <div className="text-xs text-white/40 truncate px-2 mb-2">
             {userEmail}
           </div>
           <button
             onClick={onOpenSettings}
-            className="glass-button-secondary w-full py-2.5 flex items-center justify-center gap-2 rounded-xl"
+            className="glass-button-secondary w-full py-2.5 sm:py-3 flex items-center justify-center gap-2 rounded-xl text-sm sm:text-base"
           >
             <SettingsIcon />
             <span>Settings</span>
           </button>
           <button
             onClick={onLogout}
-            className="glass-button-secondary w-full py-2.5 flex items-center justify-center gap-2 rounded-xl text-red-400 hover:bg-red-500/10"
+            className="glass-button-secondary w-full py-2.5 sm:py-3 flex items-center justify-center gap-2 rounded-xl text-red-400 hover:bg-red-500/10 text-sm sm:text-base"
           >
             <LogOutIcon />
             <span>Logout</span>

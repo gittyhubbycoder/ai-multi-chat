@@ -11,13 +11,13 @@ export default function ModelSelector({
   apiKeys
 }) {
   return (
-    <div className="p-4 border-b border-white/10">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="p-3 sm:p-4 border-b border-white/10 bg-glass-dark">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         {!compareMode && (
           <select
             value={currentModel}
             onChange={(e) => onSelectModel(e.target.value)}
-            className="glass-input px-3 py-2 text-sm rounded-xl cursor-pointer"
+            className="glass-input px-3 sm:px-4 py-2 text-sm rounded-xl cursor-pointer min-w-[140px] sm:min-w-[180px]"
           >
             {models.map(model => (
               <option 
@@ -34,7 +34,7 @@ export default function ModelSelector({
         <button
           onClick={onToggleCompare}
           className={`
-            flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all
+            flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm transition-all
             ${compareMode 
               ? 'bg-indigo-500/30 border border-indigo-500/50 text-indigo-300' 
               : 'glass-button-secondary'}
@@ -45,7 +45,7 @@ export default function ModelSelector({
         </button>
 
         {compareMode && (
-          <div className="flex flex-wrap gap-2 ml-2">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto sm:ml-2">
             {models.map(model => {
               const isSelected = selectedModels.includes(model.id);
               const hasKey = !!apiKeys[model.provider];
@@ -56,7 +56,7 @@ export default function ModelSelector({
                   onClick={() => hasKey && onToggleModelSelection(model.id)}
                   disabled={!hasKey}
                   className={`
-                    model-chip
+                    model-chip text-xs sm:text-sm
                     ${isSelected ? 'selected' : 'opacity-60'}
                     ${!hasKey && 'opacity-30 cursor-not-allowed'}
                   `}
@@ -67,10 +67,10 @@ export default function ModelSelector({
                   }}
                 >
                   <span 
-                    className="w-2 h-2 rounded-full"
+                    className="w-2 h-2 rounded-full flex-shrink-0"
                     style={{ backgroundColor: model.color }}
                   />
-                  {model.name.split(' ')[0]}
+                  <span className="truncate">{model.name.split(' ')[0]}</span>
                 </button>
               );
             })}

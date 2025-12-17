@@ -23,12 +23,12 @@ export default function BiasAnalysis({ analysis, onAnalyze, analyzing }) {
   };
 
   return (
-    <div className="p-4 border-t border-white/10">
+    <div className="p-3 sm:p-4 border-t border-white/10 bg-glass-dark">
       {!analysis && onAnalyze && (
         <button
           onClick={onAnalyze}
           disabled={analyzing}
-          className="glass-button w-full py-3 flex items-center justify-center gap-2"
+          className="glass-button w-full py-2.5 sm:py-3 flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           <AnalyzeIcon />
           {analyzing ? 'Analyzing responses...' : 'Analyze Bias & Quality'}
@@ -36,18 +36,18 @@ export default function BiasAnalysis({ analysis, onAnalyze, analyzing }) {
       )}
 
       {analysis && (
-        <div className="space-y-4 animate-fadeIn">
-          <h3 className="font-semibold text-lg flex items-center gap-2">
+        <div className="space-y-3 sm:space-y-4 animate-fadeIn">
+          <h3 className="font-semibold text-base sm:text-lg flex items-center gap-2">
             <AnalyzeIcon />
             Analysis Results
           </h3>
 
-          <div className="grid gap-3">
+          <div className="grid gap-3 sm:gap-4">
             {analysis.models?.map((model, idx) => (
-              <div key={idx} className="glass p-4 rounded-xl space-y-3">
-                <h4 className="font-medium">{model.name}</h4>
+              <div key={idx} className="glass p-3 sm:p-4 rounded-xl space-y-3">
+                <h4 className="font-medium text-sm sm:text-base">{model.name}</h4>
                 
-                <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                   <div>
                     <div className="flex justify-between mb-1">
                       <span className="text-white/60">Bias</span>
@@ -78,15 +78,15 @@ export default function BiasAnalysis({ analysis, onAnalyze, analyzing }) {
                   </div>
                 </div>
 
-                <p className="text-sm text-white/70">{model.summary}</p>
+                <p className="text-xs sm:text-sm text-white/70 leading-relaxed">{model.summary}</p>
               </div>
             ))}
           </div>
 
           {analysis.recommendation && (
-            <div className="glass p-4 rounded-xl bg-indigo-500/10 border-indigo-500/30">
-              <h4 className="font-medium mb-2 text-indigo-300">Recommendation</h4>
-              <p className="text-sm text-white/80">{analysis.recommendation}</p>
+            <div className="glass p-3 sm:p-4 rounded-xl bg-indigo-500/10 border-indigo-500/30">
+              <h4 className="font-medium mb-2 text-indigo-300 text-sm sm:text-base">Recommendation</h4>
+              <p className="text-xs sm:text-sm text-white/80 leading-relaxed">{analysis.recommendation}</p>
             </div>
           )}
         </div>
