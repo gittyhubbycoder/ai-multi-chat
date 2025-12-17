@@ -139,6 +139,70 @@
     z-index:40;
   }
 }
+
+/* Glassmorphism Styles */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-button {
+  background: rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+  background: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Animated gradient background */
+body {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 20s ease infinite;
+  min-height: 100vh;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Ensure text is readable on gradient */
+.text-white, .text-gray-200, .text-gray-300, .text-gray-400 {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
 </style>
 </head>
 <body>
@@ -201,6 +265,7 @@ const SparklesIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="non
 const ColumnsIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>;
 const AnalyzeIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>;
 const MenuIcon=()=><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>;
+const CloseIcon=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
 function App(){
 const [session,setSession]=useState(null);
 const [view,setView]=useState('chat');
@@ -646,8 +711,8 @@ setLoading(false);
 };
 if(!session){
 return(
-<div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 p-4">
-<div className="bg-gray-800 p-6 md:p-8 rounded-2xl w-full max-w-md border border-gray-700">
+<div className="flex items-center justify-center min-h-screen p-4">
+<div className="glass-card p-6 md:p-8 rounded-2xl w-full max-w-md">
 <div className="text-center mb-8">
 <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
 <UserIcon/>
@@ -657,15 +722,15 @@ return(
 </div>
 <div className="space-y-4">
 <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="Email"
-className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
+className="w-full glass-input text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
 <input type="password" value={password} onChange={(e)=>setPassword(e.target.value)} placeholder="Password"
 onKeyPress={(e)=>e.key==='Enter'&&handleAuth()}
-className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
+className="w-full glass-input text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
 {isSignup&&(
 <input type="text" value={inviteCode} onChange={(e)=>setInviteCode(e.target.value)} placeholder="Invite Code"
-className="w-full bg-gray-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
+className="w-full glass-input text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"/>
 )}
-<button onClick={handleAuth} className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-base">
+<button onClick={handleAuth} className="w-full glass-button hover:bg-blue-700 text-white py-3 rounded-lg font-semibold text-base">
 {isSignup?'Sign Up':'Login'}
 </button>
 <button onClick={()=>setIsSignup(!isSignup)} className="w-full text-blue-400 hover:text-blue-300 text-sm">
@@ -686,21 +751,21 @@ return <ImageGenView imagePrompt={imagePrompt} setImagePrompt={setImagePrompt} g
 generatedImage={generatedImage} loading={loading} setView={setView}/>;
 }
 return(
-<div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+<div className="flex h-screen text-white overflow-hidden">
 {/* Mobile Overlay */}
 {showSidebar&&(
-<div className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40" onClick={()=>setShowSidebar(false)}/>
+<div className="md:hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40" onClick={()=>setShowSidebar(false)}/>
 )}
 
 {/* Sidebar */}
-<div className={`${showSidebar?'translate-x-0':'translate-x-[-100%]'} md:translate-x-0 fixed md:relative z-50 md:z-auto w-64 bg-gray-800 border-r border-gray-700 flex flex-col transition-transform h-full`}>
-<div className="p-3 md:p-4 border-b border-gray-700 space-y-2">
+<div className={`${showSidebar?'translate-x-0':'translate-x-[-100%]'} md:translate-x-0 fixed md:relative z-50 md:z-auto w-64 glass-dark border-r border-white border-opacity-20 flex flex-col transition-transform h-full`}>
+<div className="p-3 md:p-4 border-b border-white border-opacity-20 space-y-2">
 <button onClick={()=>{createNewChat();setShowSidebar(false);}} 
-className="w-full bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm md:text-base">
+className="w-full glass-button hover:bg-blue-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm md:text-base">
 <PlusIcon/>New Chat
 </button>
 <button onClick={()=>setView('image')} 
-className="w-full bg-pink-600 hover:bg-pink-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm">
+className="w-full glass-button hover:bg-pink-700 px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm" style={{background: 'rgba(236, 72, 153, 0.3)'}}>
 <ImageIcon/>Generate Image
 </button>
 </div>
@@ -708,7 +773,7 @@ className="w-full bg-pink-600 hover:bg-pink-700 px-3 py-2 rounded-lg flex items-
 <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
 {chats.map(chat=>(
 <div key={chat.id} 
-className={`p-2 md:p-3 mb-2 rounded-lg cursor-pointer group ${currentChatId===chat.id?'bg-gray-700':'hover:bg-gray-750'}`}
+className={`p-2 md:p-3 mb-2 rounded-lg cursor-pointer group glass-card ${currentChatId===chat.id?'bg-opacity-30':'hover:bg-opacity-20'}`}
 onClick={()=>{setCurrentChatId(chat.id);setShowSidebar(false);}}>
 <div className="flex items-center justify-between">
 {editingChatId===chat.id?(
@@ -737,9 +802,9 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 ))}
 </div>
 
-<div className="p-3 md:p-4 border-t border-gray-700">
+<div className="p-3 md:p-4 border-t border-white border-opacity-20">
 <div className="flex items-center gap-2 md:gap-3 mb-3">
-<div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+<div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 glass">
 {isAdmin?<ShieldIcon/>:<UserIcon/>}
 </div>
 <div className="flex-1 min-w-0">
@@ -748,10 +813,10 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 </div>
 </div>
 <div className="flex gap-2">
-<button onClick={()=>setShowSettings(true)} className="flex-1 p-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+<button onClick={()=>setShowSettings(true)} className="flex-1 p-2 glass-card hover:bg-opacity-30 rounded-lg">
 <SettingsIcon/>
 </button>
-<button onClick={()=>supabase.auth.signOut()} className="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg">
+<button onClick={()=>supabase.auth.signOut()} className="p-2 glass-card hover:bg-opacity-30 rounded-lg">
 <LogOutIcon/>
 </button>
 </div>
@@ -759,11 +824,11 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 </div>
 {/* Main Chat Area */}
 <div className="flex-1 flex flex-col min-w-0">
-<div className="bg-gray-800 border-b border-gray-700 p-3 md:p-4 flex items-center gap-2 flex-wrap">
-<button onClick={()=>setShowSidebar(!showSidebar)} className="md:hidden p-2 hover:bg-gray-700 rounded-lg">
+<div className="glass-dark border-b border-white border-opacity-20 p-3 md:p-4 flex items-center gap-2 flex-wrap">
+<button onClick={()=>setShowSidebar(!showSidebar)} className="md:hidden p-2 glass-card hover:bg-opacity-30 rounded-lg">
 <MenuIcon/>
 </button>
-<button onClick={()=>setShowSidebar(!showSidebar)} className="hidden md:block p-2 hover:bg-gray-700 rounded-lg">☰</button>
+<button onClick={()=>setShowSidebar(!showSidebar)} className="hidden md:block p-2 glass-card hover:bg-opacity-30 rounded-lg">☰</button>
 <div className="flex-1 min-w-0">
 <div className="font-semibold text-sm md:text-base truncate">{currentChat?.name||'Chat'}</div>
 </div>
@@ -771,8 +836,8 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 {/* Compare Mode Toggle */}
 {currentChat&&(
 <button onClick={toggleCompareMode}
-className={`px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold flex items-center gap-1 ${
-compareMode?'bg-purple-600 hover:bg-purple-700':'bg-gray-700 hover:bg-gray-600'
+className={`px-3 py-1.5 rounded-lg text-xs md:text-sm font-semibold flex items-center gap-1 glass-card ${
+compareMode?'bg-opacity-40':'hover:bg-opacity-30'
 }`}>
 <ColumnsIcon/>
 {compareMode?'Compare ON':'Compare OFF'}
@@ -782,18 +847,18 @@ compareMode?'bg-purple-600 hover:bg-purple-700':'bg-gray-700 hover:bg-gray-600'
 {/* Model Selector (only in normal mode) */}
 {currentChat&&!compareMode&&(
 <select value={currentChat.model} onChange={(e)=>updateChatModel(e.target.value)}
-className="bg-gray-700 text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm border border-gray-600">
+className="glass-input text-white px-2 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm border border-white border-opacity-20">
 {models.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}
 </select>
 )}
 </div>
 {/* Compare Mode Model Selection */}
 {compareMode&&currentChat&&(
-<div className="bg-gray-800 border-b border-gray-700 p-2 md:p-3">
+<div className="glass-dark border-b border-white border-opacity-20 p-2 md:p-3">
 <div className="flex flex-wrap gap-2 items-center">
-<span className="text-xs md:text-sm text-gray-400">Select Models:</span>
+<span className="text-xs md:text-sm text-gray-300">Select Models:</span>
 {models.map(m=>(
-<label key={m.id} className="flex items-center gap-1 cursor-pointer bg-gray-700 px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-gray-600 text-xs md:text-sm">
+<label key={m.id} className="flex items-center gap-1 cursor-pointer glass-card px-2 md:px-3 py-1 md:py-1.5 rounded-lg hover:bg-opacity-30 text-xs md:text-sm">
 <input type="checkbox" checked={selectedModels.includes(m.id)}
 onChange={()=>toggleModelSelection(m.id)}
 className="w-3 h-3 md:w-4 md:h-4"/>
@@ -802,7 +867,7 @@ className="w-3 h-3 md:w-4 md:h-4"/>
 ))}
 {Object.keys(compareResponses).length>0&&(
 <button onClick={analyzeBias} disabled={analyzingBias}
-className="ml-auto px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex items-center gap-1 text-xs md:text-sm disabled:opacity-50">
+className="ml-auto px-3 py-1.5 glass-button hover:bg-yellow-700 rounded-lg flex items-center gap-1 text-xs md:text-sm disabled:opacity-50" style={{background: 'rgba(234, 179, 8, 0.3)'}}>
 <AnalyzeIcon/>
 {analyzingBias?'Analyzing...':'Analyze Bias'}
 </button>
@@ -813,11 +878,14 @@ className="ml-auto px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex
 
 {/* Bias Analysis Results */}
 {biasAnalysis&&compareMode&&(
-<div className="bg-gray-800 border-b border-gray-700 p-3 md:p-4">
+<div className="glass-dark border-b border-white border-opacity-20 p-3 md:p-4 relative">
+<button onClick={()=>setBiasAnalysis(null)} className="absolute top-3 right-3 p-2 glass-card hover:bg-opacity-40 rounded-full transition-all text-white hover:text-red-300 z-10">
+<CloseIcon/>
+</button>
 <h3 className="font-bold text-sm md:text-base mb-3 text-yellow-400">📊 Bias Analysis</h3>
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
 {biasAnalysis.models.map((analysis,idx)=>(
-<div key={idx} className="bg-gray-700 p-3 rounded-lg text-xs md:text-sm">
+<div key={idx} className="glass-card p-3 rounded-lg text-xs md:text-sm">
 <h4 className="font-bold mb-2">{analysis.name}</h4>
 <div className="space-y-1">
 <div className="flex justify-between">
@@ -849,7 +917,7 @@ className="ml-auto px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex
 </div>
 ))}
 </div>
-<div className="bg-blue-900 bg-opacity-30 p-3 rounded-lg">
+<div className="glass-card p-3 rounded-lg" style={{background: 'rgba(59, 130, 246, 0.2)'}}>
 <p className="text-xs md:text-sm"><strong>Recommendation:</strong> {biasAnalysis.recommendation}</p>
 </div>
 </div>
@@ -867,7 +935,7 @@ className="ml-auto px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 rounded-lg flex
 {/* Normal Mode Messages */}
 {!compareMode&&currentChat?.messages?.map((msg,idx)=>(
 <div key={idx} className={`flex mb-4 ${msg.role==='user'?'justify-end':'justify-start'}`}>
-<div className={`max-w-[85%] md:max-w-[80%] rounded-2xl p-3 md:p-4 ${msg.role==='user'?'bg-blue-600':'bg-gray-800'} message-content`}>
+<div className={`max-w-[85%] md:max-w-[80%] rounded-2xl p-3 md:p-4 glass-card message-content ${msg.role==='user'?'bg-opacity-40':''}`} style={msg.role==='user'?{background: 'rgba(59, 130, 246, 0.3)'}:{}}>
 {msg.file&&<div className="text-xs mb-2 opacity-75">📎 {msg.file.name}</div>}
 {msg.role==='user'?(
 <div className="whitespace-pre-wrap break-words">{msg.content}</div>
@@ -886,9 +954,9 @@ const model=models.find(m=>m.id===modelId);
 const history=compareResponses[modelId]||[];
 return(
 <div key={modelId} 
-className={`compare-column bg-gray-800 rounded-lg p-3 md:p-4 ${focusedModel===modelId?'active':''}`}
+className={`compare-column glass-card rounded-lg p-3 md:p-4 ${focusedModel===modelId?'active':''}`}
 onClick={()=>focusOnModel(modelId)}>
-<div className="flex items-center justify-between mb-3 sticky top-0 bg-gray-800 pb-2 border-b border-gray-700">
+<div className="flex items-center justify-between mb-3 sticky top-0 glass-dark pb-2 border-b border-white border-opacity-20">
 <h3 className="font-bold text-sm md:text-base flex items-center gap-2">
 <div className="w-3 h-3 rounded-full" style={{backgroundColor:model.color}}/>
 {model.name}
@@ -917,11 +985,11 @@ onClick={()=>focusOnModel(modelId)}>
 
 {loading&&(
 <div className="flex justify-start mb-4">
-<div className="bg-gray-800 rounded-2xl p-3 md:p-4">
+<div className="glass-card rounded-2xl p-3 md:p-4">
 <div className="flex gap-2">
-<div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-1"/>
-<div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-2"/>
-<div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce-3"/>
+<div className="w-2 h-2 bg-white rounded-full animate-bounce-1 opacity-60"/>
+<div className="w-2 h-2 bg-white rounded-full animate-bounce-2 opacity-60"/>
+<div className="w-2 h-2 bg-white rounded-full animate-bounce-3 opacity-60"/>
 </div>
 </div>
 </div>
@@ -929,15 +997,15 @@ onClick={()=>focusOnModel(modelId)}>
 <div ref={messagesEndRef}/>
 </div>
 {/* Input Area */}
-<div className="bg-gray-800 border-t border-gray-700 p-2 md:p-4">
+<div className="glass-dark border-t border-white border-opacity-20 p-2 md:p-4">
 {attachedFile&&(
-<div className="mb-2 flex items-center gap-2 bg-gray-700 p-2 rounded text-xs md:text-sm">
+<div className="mb-2 flex items-center gap-2 glass-card p-2 rounded text-xs md:text-sm">
 <span className="truncate">📎 {attachedFile.name}</span>
 <button onClick={()=>setAttachedFile(null)} className="text-red-400 hover:text-red-300 ml-auto">×</button>
 </div>
 )}
 {focusedModel&&compareMode&&(
-<div className="mb-2 bg-blue-900 bg-opacity-30 p-2 rounded text-xs md:text-sm">
+<div className="mb-2 glass-card p-2 rounded text-xs md:text-sm" style={{background: 'rgba(59, 130, 246, 0.2)'}}>
 Talking to: <strong>{models.find(m=>m.id===focusedModel)?.name}</strong>
 <button onClick={()=>focusOnModel(null)} className="ml-2 text-blue-400">Send to all</button>
 </div>
@@ -945,20 +1013,20 @@ Talking to: <strong>{models.find(m=>m.id===focusedModel)?.name}</strong>
 <div className="flex gap-1 md:gap-2">
 <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*,application/pdf,.txt" className="hidden"/>
 <button onClick={()=>fileInputRef.current?.click()} disabled={loading}
-className="p-2 md:p-3 bg-gray-700 hover:bg-gray-600 rounded-lg disabled:opacity-50" title="Attach file">
+className="p-2 md:p-3 glass-card hover:bg-opacity-30 rounded-lg disabled:opacity-50" title="Attach file">
 <PaperclipIcon/>
 </button>
 <button onClick={enhancePrompt} disabled={loading||!input.trim()}
-className="p-2 md:p-3 bg-purple-600 hover:bg-purple-700 rounded-lg disabled:opacity-50" title="Enhance prompt">
+className="p-2 md:p-3 glass-button hover:bg-purple-700 rounded-lg disabled:opacity-50" title="Enhance prompt" style={{background: 'rgba(147, 51, 234, 0.3)'}}>
 <SparklesIcon/>
 </button>
 <input type="text" value={input} onChange={(e)=>setInput(e.target.value)}
 onKeyPress={(e)=>e.key==='Enter'&&!e.shiftKey&&sendMessage()}
 placeholder={compareMode?"Ask all selected AIs...":"Type a message..."}
 disabled={loading}
-className="flex-1 bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="flex-1 glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <button onClick={sendMessage} disabled={loading||!input.trim()}
-className="px-4 md:px-6 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacity-50">
+className="px-4 md:px-6 glass-button hover:bg-blue-700 rounded-lg disabled:opacity-50">
 <SendIcon/>
 </button>
 </div>
@@ -969,20 +1037,20 @@ className="px-4 md:px-6 bg-blue-600 hover:bg-blue-700 rounded-lg disabled:opacit
 }
 function ImageGenView({imagePrompt,setImagePrompt,generateImage,generatedImage,loading,setView}){
 return(
-<div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+<div className="min-h-screen text-white p-4 md:p-8">
 <div className="max-w-4xl mx-auto">
-<button onClick={()=>setView('chat')} className="text-blue-400 hover:text-blue-300 mb-4 text-sm md:text-base">
+<button onClick={()=>setView('chat')} className="text-blue-300 hover:text-blue-200 mb-4 text-sm md:text-base glass-card px-3 py-2 rounded-lg">
 ← Back to Chat
 </button>
 <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Generate Images</h1>
-<p className="text-gray-400 mb-4 md:mb-6 text-sm md:text-base">Powered by Pollinations.ai - 100% free!</p>
+<p className="text-gray-200 mb-4 md:mb-6 text-sm md:text-base">Powered by Pollinations.ai - 100% free!</p>
 <div className="mb-4 md:mb-6 flex gap-2">
 <input type="text" value={imagePrompt} onChange={(e)=>setImagePrompt(e.target.value)}
 onKeyPress={(e)=>e.key==='Enter'&&generateImage()}
 placeholder="Describe the image..."
-className="flex-1 bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="flex-1 glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <button onClick={generateImage} disabled={loading||!imagePrompt.trim()}
-className="px-4 md:px-6 bg-pink-600 hover:bg-pink-700 rounded-lg disabled:opacity-50 font-semibold text-sm md:text-base">
+className="px-4 md:px-6 glass-button hover:bg-pink-700 rounded-lg disabled:opacity-50 font-semibold text-sm md:text-base" style={{background: 'rgba(236, 72, 153, 0.3)'}}>
 Generate
 </button>
 </div>
@@ -993,15 +1061,15 @@ Generate
 </div>
 )}
 {generatedImage&&!loading&&(
-<div className="bg-gray-800 p-3 md:p-4 rounded-2xl border border-gray-700">
+<div className="glass-card p-3 md:p-4 rounded-2xl">
 <img src={generatedImage} alt="Generated" className="w-full rounded-lg mb-4"/>
 <div className="flex flex-col md:flex-row gap-2">
 <a href={generatedImage} download="generated-image.png" 
-className="flex-1 text-center bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold text-sm md:text-base">
+className="flex-1 text-center glass-button hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold text-sm md:text-base">
 Download
 </a>
 <button onClick={()=>setGeneratedImage(null)} 
-className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-sm md:text-base">
+className="px-4 py-2 glass-card hover:bg-opacity-30 rounded-lg text-sm md:text-base">
 Clear
 </button>
 </div>
@@ -1033,49 +1101,49 @@ setShowSettings(false);
 };
 
 return(
-<div className="min-h-screen bg-gray-900 text-white p-4 md:p-8">
+<div className="min-h-screen text-white p-4 md:p-8">
 <div className="max-w-2xl mx-auto">
-<button onClick={()=>setShowSettings(false)} className="text-blue-400 hover:text-blue-300 mb-4 text-sm md:text-base">
+<button onClick={()=>setShowSettings(false)} className="text-blue-300 hover:text-blue-200 mb-4 text-sm md:text-base glass-card px-3 py-2 rounded-lg">
 ← Back
 </button>
 <h1 className="text-2xl md:text-3xl font-bold mb-2">Settings</h1>
-<p className="text-gray-400 mb-4 md:mb-6 text-sm md:text-base">Configure your API keys</p>
+<p className="text-gray-200 mb-4 md:mb-6 text-sm md:text-base">Configure your API keys</p>
 
-<div className="space-y-4 md:space-y-6 bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700">
+<div className="space-y-4 md:space-y-6 glass-card p-4 md:p-6 rounded-2xl">
 <div>
 <label className="block text-xs md:text-sm font-semibold mb-2">Google Gemini</label>
 <input type="password" value={google} onChange={(e)=>setGoogle(e.target.value)}
-className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" 
-className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block">Get key →</a>
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
 </div>
 
 <div>
 <label className="block text-xs md:text-sm font-semibold mb-2">Cerebras</label>
 <input type="password" value={cerebras} onChange={(e)=>setCerebras(e.target.value)}
-className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <a href="https://cloud.cerebras.ai/" target="_blank" rel="noopener" 
-className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block">Get key →</a>
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
 </div>
 
 <div>
 <label className="block text-xs md:text-sm font-semibold mb-2">Groq</label>
 <input type="password" value={groq} onChange={(e)=>setGroq(e.target.value)}
-className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <a href="https://console.groq.com/keys" target="_blank" rel="noopener" 
-className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block">Get key →</a>
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
 </div>
 
 <div>
 <label className="block text-xs md:text-sm font-semibold mb-2">DeepSeek</label>
 <input type="password" value={deepseek} onChange={(e)=>setDeepseek(e.target.value)}
-className="w-full bg-gray-700 text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" 
-className="text-xs text-blue-400 hover:text-blue-300 mt-1 inline-block">Get key →</a>
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
 </div>
 
 <button onClick={saveKeys} 
-className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base">
+className="w-full glass-button hover:bg-blue-700 text-white py-2 md:py-3 rounded-lg font-semibold text-sm md:text-base">
 Save API Keys
 </button>
 </div>
