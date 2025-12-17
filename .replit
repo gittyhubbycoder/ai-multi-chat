@@ -21,13 +21,13 @@ args = "Frontend Server"
 name = "Frontend Server"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npx serve -l 5000 -s ."
-waitForPort = 5000
-
 [workflows.workflow.metadata]
 outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000
@@ -36,3 +36,11 @@ externalPort = 80
 [deployment]
 deploymentTarget = "static"
 publicDir = "."
+
+[userenv]
+
+[userenv.shared]
+VITE_SUPABASE_URL = "https://dagyncvbqirgnydsxahf.supabase.co"
+VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRhZ3luY3ZicWlyZ255ZHN4YWhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NzU0MTIsImV4cCI6MjA4MTA1MTQxMn0.SzYiLxkdrtjUEi4g-9FwwdWSpyUewfEqrSbazrNGW1E"
+VITE_ADMIN_EMAIL = "jasimd931@gmail.com"
+VITE_INVITE_CODE = "FAMILY2024"
