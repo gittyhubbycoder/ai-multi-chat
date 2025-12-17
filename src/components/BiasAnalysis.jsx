@@ -23,12 +23,12 @@ export default function BiasAnalysis({ analysis, onAnalyze, analyzing }) {
   };
 
   return (
-    <div className="p-4 sm:p-5 border-t border-white/10 glass-dark">
+    <div className="p-5 sm:p-6 border-t border-white/20 glass-dark">
       {!analysis && onAnalyze && (
         <button
           onClick={onAnalyze}
           disabled={analyzing}
-          className="glass-button w-full py-3 flex items-center justify-center gap-2 text-base font-medium"
+          className="glass-button w-full py-4 flex items-center justify-center gap-3 text-lg font-semibold"
         >
           <AnalyzeIcon />
           {analyzing ? 'Analyzing responses...' : 'Analyze Bias & Quality'}
@@ -36,57 +36,57 @@ export default function BiasAnalysis({ analysis, onAnalyze, analyzing }) {
       )}
 
       {analysis && (
-        <div className="space-y-4 animate-fadeIn">
-          <h3 className="font-bold text-lg sm:text-xl flex items-center gap-2 text-white">
+        <div className="space-y-5 animate-fadeIn">
+          <h3 className="font-bold text-xl sm:text-2xl flex items-center gap-3 text-white">
             <AnalyzeIcon />
             Analysis Results
           </h3>
 
-          <div className="grid gap-4">
+          <div className="grid gap-5">
             {analysis.models?.map((model, idx) => (
-              <div key={idx} className="glass p-4 sm:p-5 rounded-xl space-y-4">
-                <h4 className="font-semibold text-base sm:text-lg text-white">{model.name}</h4>
+              <div key={idx} className="glass-card p-5 sm:p-6 space-y-5">
+                <h4 className="font-bold text-lg sm:text-xl text-white">{model.name}</h4>
                 
-                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-2 gap-4 sm:gap-5">
                   <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-white/70 font-medium text-sm">Bias</span>
-                      <span className={`${getScoreColor(model.bias)} font-bold text-base`}>{model.bias}/10</span>
+                    <div className="flex justify-between mb-3">
+                      <span className="text-white/80 font-semibold text-base">Bias</span>
+                      <span className={`${getScoreColor(model.bias)} font-bold text-lg`}>{model.bias}/10</span>
                     </div>
                     {getScoreBar(model.bias)}
                   </div>
                   <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-white/70 font-medium text-sm">Credibility</span>
-                      <span className={`${getScoreColor(model.credibility)} font-bold text-base`}>{model.credibility}/10</span>
+                    <div className="flex justify-between mb-3">
+                      <span className="text-white/80 font-semibold text-base">Credibility</span>
+                      <span className={`${getScoreColor(model.credibility)} font-bold text-lg`}>{model.credibility}/10</span>
                     </div>
                     {getScoreBar(model.credibility)}
                   </div>
                   <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-white/70 font-medium text-sm">Completeness</span>
-                      <span className={`${getScoreColor(model.completeness)} font-bold text-base`}>{model.completeness}/10</span>
+                    <div className="flex justify-between mb-3">
+                      <span className="text-white/80 font-semibold text-base">Completeness</span>
+                      <span className={`${getScoreColor(model.completeness)} font-bold text-lg`}>{model.completeness}/10</span>
                     </div>
                     {getScoreBar(model.completeness)}
                   </div>
                   <div>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-white/70 font-medium text-sm">Clarity</span>
-                      <span className={`${getScoreColor(model.clarity)} font-bold text-base`}>{model.clarity}/10</span>
+                    <div className="flex justify-between mb-3">
+                      <span className="text-white/80 font-semibold text-base">Clarity</span>
+                      <span className={`${getScoreColor(model.clarity)} font-bold text-lg`}>{model.clarity}/10</span>
                     </div>
                     {getScoreBar(model.clarity)}
                   </div>
                 </div>
 
-                <p className="text-sm sm:text-base text-white/80 leading-relaxed">{model.summary}</p>
+                <p className="text-base sm:text-lg text-white/90 leading-relaxed font-medium">{model.summary}</p>
               </div>
             ))}
           </div>
 
           {analysis.recommendation && (
-            <div className="glass p-4 sm:p-5 rounded-xl bg-indigo-500/15 border-2 border-indigo-500/40">
-              <h4 className="font-semibold mb-3 text-indigo-300 text-base sm:text-lg">Recommendation</h4>
-              <p className="text-sm sm:text-base text-white/90 leading-relaxed">{analysis.recommendation}</p>
+            <div className="glass-card p-5 sm:p-6 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border-2 border-indigo-400/50">
+              <h4 className="font-bold mb-4 text-indigo-200 text-lg sm:text-xl">Recommendation</h4>
+              <p className="text-base sm:text-lg text-white leading-relaxed font-medium">{analysis.recommendation}</p>
             </div>
           )}
         </div>

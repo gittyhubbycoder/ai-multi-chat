@@ -11,13 +11,13 @@ export default function ModelSelector({
   apiKeys
 }) {
   return (
-    <div className="p-4 sm:p-5 border-b border-white/10 glass-dark">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="p-5 sm:p-6 border-b border-white/20 glass-dark">
+      <div className="flex flex-wrap items-center gap-4">
         {!compareMode && (
           <select
             value={currentModel}
             onChange={(e) => onSelectModel(e.target.value)}
-            className="glass-input px-4 py-3 text-base rounded-xl cursor-pointer min-w-[180px] sm:min-w-[220px] font-medium"
+            className="glass-input px-5 py-3.5 text-base rounded-xl cursor-pointer min-w-[200px] sm:min-w-[240px] font-semibold"
           >
             {models.map(model => (
               <option 
@@ -34,9 +34,9 @@ export default function ModelSelector({
         <button
           onClick={onToggleCompare}
           className={`
-            flex items-center gap-2 px-4 py-3 rounded-xl text-sm sm:text-base font-medium transition-all
+            flex items-center gap-2.5 px-5 py-3.5 rounded-xl text-base font-semibold transition-all
             ${compareMode 
-              ? 'bg-indigo-500/40 border-2 border-indigo-500/60 text-indigo-200 shadow-lg shadow-indigo-500/30' 
+              ? 'bg-gradient-to-r from-indigo-500/50 to-purple-500/50 border-2 border-indigo-400/70 text-indigo-100 shadow-xl shadow-indigo-500/40' 
               : 'glass-button-secondary'}
           `}
         >
@@ -45,7 +45,7 @@ export default function ModelSelector({
         </button>
 
         {compareMode && (
-          <div className="flex flex-wrap gap-2.5 w-full sm:w-auto sm:ml-2">
+          <div className="flex flex-wrap gap-3 w-full sm:w-auto sm:ml-2">
             {models.map(model => {
               const isSelected = selectedModels.includes(model.id);
               const hasKey = !!apiKeys[model.provider];
@@ -56,19 +56,19 @@ export default function ModelSelector({
                   onClick={() => hasKey && onToggleModelSelection(model.id)}
                   disabled={!hasKey}
                   className={`
-                    model-chip text-sm sm:text-base font-medium
-                    ${isSelected ? 'selected' : 'opacity-70'}
+                    model-chip text-base font-semibold
+                    ${isSelected ? 'selected' : 'opacity-75'}
                     ${!hasKey && 'opacity-40 cursor-not-allowed'}
                   `}
                   style={{ 
-                    backgroundColor: `${model.color}25`,
+                    backgroundColor: `${model.color}30`,
                     color: model.color,
                     borderColor: isSelected ? model.color : 'transparent'
                   }}
                 >
                   <span 
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: model.color }}
+                    className="w-3 h-3 rounded-full flex-shrink-0 shadow-lg"
+                    style={{ backgroundColor: model.color, boxShadow: `0 0 12px ${model.color}60` }}
                   />
                   <span className="truncate">{model.name.split(' ')[0]}</span>
                 </button>

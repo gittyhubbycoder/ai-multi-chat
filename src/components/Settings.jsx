@@ -53,35 +53,38 @@ export default function Settings({ isOpen, onClose, apiKeys, onSaveKeys, supabas
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       
-      <div className="glass-card relative w-full max-w-lg p-6 sm:p-8 animate-fadeIn max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white">API Keys</h2>
+      <div className="glass-card relative w-full max-w-lg p-8 sm:p-10 animate-fadeIn max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent">API Keys</h2>
           <button
             onClick={onClose}
-            className="p-2.5 hover:bg-white/10 rounded-lg transition-colors flex-shrink-0"
+            className="p-3 hover:bg-white/10 rounded-xl transition-colors flex-shrink-0 glass-button-secondary"
             aria-label="Close settings"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <p className="text-white/70 text-base sm:text-lg mb-6">
+        <p className="text-white/80 text-lg sm:text-xl mb-8 font-medium">
           Enter your API keys to enable each AI provider. Keys are stored securely.
         </p>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {providers.map(provider => {
             const model = models.find(m => m.provider === provider);
             return (
-              <div key={provider} className="space-y-3">
-                <label className="flex items-center gap-3 text-base sm:text-lg font-semibold text-white">
+              <div key={provider} className="space-y-4">
+                <label className="flex items-center gap-4 text-lg sm:text-xl font-bold text-white">
                   <span 
-                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: model?.color }}
+                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex-shrink-0 shadow-lg"
+                    style={{ 
+                      backgroundColor: model?.color,
+                      boxShadow: `0 0 16px ${model?.color}70`
+                    }}
                   />
                   {provider.charAt(0).toUpperCase() + provider.slice(1)}
                   {keys[provider] && (
-                    <CheckIcon className="text-green-400 w-5 h-5" />
+                    <CheckIcon className="text-green-400 w-6 h-6" />
                   )}
                 </label>
                 <input
@@ -89,24 +92,24 @@ export default function Settings({ isOpen, onClose, apiKeys, onSaveKeys, supabas
                   value={keys[provider] || ''}
                   onChange={(e) => setKeys({ ...keys, [provider]: e.target.value })}
                   placeholder={`Enter ${provider} API key`}
-                  className="glass-input w-full px-4 py-3.5 text-base"
+                  className="glass-input w-full px-5 py-4 text-base font-medium"
                 />
               </div>
             );
           })}
         </div>
 
-        <div className="flex gap-3 mt-8">
+        <div className="flex gap-4 mt-10">
           <button
             onClick={onClose}
-            className="glass-button-secondary flex-1 py-3 rounded-xl text-base font-medium"
+            className="glass-button-secondary flex-1 py-4 rounded-xl text-base font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="glass-button flex-1 py-3 rounded-xl text-base font-medium"
+            className="glass-button flex-1 py-4 rounded-xl text-base font-semibold"
           >
             {saving ? 'Saving...' : 'Save Keys'}
           </button>

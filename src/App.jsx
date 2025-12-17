@@ -362,15 +362,15 @@ export default function App() {
         />
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          <header className="glass p-4 sm:p-5 flex items-center gap-4 border-b border-white/10 flex-shrink-0">
+          <header className="glass p-5 sm:p-6 flex items-center gap-4 border-b border-white/20 flex-shrink-0">
             <button
               onClick={() => setShowSidebar(true)}
-              className="p-2.5 hover:bg-white/10 rounded-lg md:hidden flex-shrink-0 transition-colors"
+              className="p-3 hover:bg-white/10 rounded-xl md:hidden flex-shrink-0 transition-colors glass-button-secondary"
               aria-label="Open sidebar"
             >
               <MenuIcon />
             </button>
-            <h1 className="font-bold truncate text-lg sm:text-xl text-white">
+            <h1 className="font-bold truncate text-xl sm:text-2xl text-white">
               {currentChat?.name || 'New Chat'}
             </h1>
           </header>

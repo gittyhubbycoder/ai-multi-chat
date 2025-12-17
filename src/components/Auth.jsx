@@ -44,24 +44,24 @@ export default function Auth({ supabase, onSuccess }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 sm:p-6">
-      <div className="glass-card p-8 sm:p-10 w-full max-w-md animate-fadeIn">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4 sm:mb-6 shadow-xl shadow-indigo-500/40">
+      <div className="glass-card p-10 sm:p-12 w-full max-w-md animate-fadeIn">
+        <div className="flex flex-col items-center mb-10">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center mb-6 sm:mb-8 shadow-2xl shadow-indigo-500/50">
             <UserIcon />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-white via-indigo-200 to-purple-200 bg-clip-text text-transparent">
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-white via-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">
             Multi-AI Platform
           </h1>
-          <p className="text-white/70 mt-3 text-base sm:text-lg font-medium">Your personal AI suite</p>
+          <p className="text-white/80 mt-4 text-lg sm:text-xl font-semibold">Your personal AI suite</p>
         </div>
 
-        <form onSubmit={handleAuth} className="space-y-4 sm:space-y-5">
+        <form onSubmit={handleAuth} className="space-y-5 sm:space-y-6">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
-            className="glass-input w-full px-4 py-3.5 text-base"
+            className="glass-input w-full px-5 py-4 text-base font-medium"
             autoComplete="email"
           />
           <input
@@ -69,7 +69,7 @@ export default function Auth({ supabase, onSuccess }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Password"
-            className="glass-input w-full px-4 py-3.5 text-base"
+            className="glass-input w-full px-5 py-4 text-base font-medium"
             autoComplete={isSignup ? 'new-password' : 'current-password'}
           />
           
@@ -79,14 +79,14 @@ export default function Auth({ supabase, onSuccess }) {
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
               placeholder="Invite Code"
-              className="glass-input w-full px-4 py-3.5 text-base"
+              className="glass-input w-full px-5 py-4 text-base font-medium"
             />
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="glass-button w-full py-3.5 text-base sm:text-lg font-semibold"
+            className="glass-button w-full py-4 text-lg sm:text-xl font-bold"
           >
             {loading ? 'Please wait...' : isSignup ? 'Create Account' : 'Login'}
           </button>
@@ -94,7 +94,7 @@ export default function Auth({ supabase, onSuccess }) {
 
         <button
           onClick={() => setIsSignup(!isSignup)}
-          className="w-full mt-5 text-center text-indigo-400 hover:text-indigo-300 transition-colors text-base font-medium"
+          className="w-full mt-6 text-center text-indigo-400 hover:text-indigo-300 transition-colors text-base sm:text-lg font-semibold"
         >
           {isSignup ? 'Already have an account? Login' : 'Need an account? Sign up'}
         </button>

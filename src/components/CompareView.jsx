@@ -18,14 +18,14 @@ export default function CompareView({
 
   if (selectedModels.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-white/60">
-        <p className="text-base sm:text-lg font-medium">Select models above to compare responses</p>
+      <div className="flex-1 flex items-center justify-center text-white/70">
+        <p className="text-lg sm:text-xl font-semibold">Select models above to compare responses</p>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
+    <div className="flex-1 flex flex-col sm:flex-row overflow-hidden gap-2 p-2">
       {selectedModels.map(modelId => {
         const model = models.find(m => m.id === modelId);
         const messages = compareResponses[modelId] || [];
@@ -33,17 +33,23 @@ export default function CompareView({
         return (
           <div 
             key={modelId}
-            className="flex-1 flex flex-col border-b sm:border-b-0 sm:border-r border-white/10 last:border-b-0 last:border-r-0 min-w-0"
+            className="flex-1 flex flex-col border-b sm:border-b-0 sm:border-r border-white/20 last:border-b-0 last:border-r-0 min-w-0 glass-dark rounded-xl overflow-hidden"
           >
             <div 
-              className="p-4 sm:p-5 border-b border-white/10 flex items-center gap-3 flex-shrink-0 glass"
-              style={{ backgroundColor: `${model.color}20` }}
+              className="p-5 sm:p-6 border-b border-white/20 flex items-center gap-4 flex-shrink-0 glass"
+              style={{ 
+                background: `linear-gradient(135deg, ${model.color}30, ${model.color}15)`,
+                borderBottom: `2px solid ${model.color}40`
+              }}
             >
               <span 
-                className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full flex-shrink-0 shadow-lg"
-                style={{ backgroundColor: model.color, boxShadow: `0 0 12px ${model.color}60` }}
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex-shrink-0 shadow-xl"
+                style={{ 
+                  backgroundColor: model.color, 
+                  boxShadow: `0 0 20px ${model.color}70` 
+                }}
               />
-              <span className="font-semibold text-sm sm:text-base truncate text-white">{model.name}</span>
+              <span className="font-bold text-base sm:text-lg truncate text-white">{model.name}</span>
             </div>
 
             <div 
@@ -51,11 +57,11 @@ export default function CompareView({
               className="flex-1 overflow-y-auto custom-scrollbar min-h-0"
             >
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-white/50 text-sm sm:text-base p-6 text-center font-medium">
+                <div className="flex items-center justify-center h-full text-white/60 text-base sm:text-lg p-8 text-center font-semibold">
                   Send a message to see {model.name}'s response
                 </div>
               ) : (
-                <div className="pb-6 pt-4">
+                <div className="pb-8 pt-6">
                   {messages.map((msg, idx) => (
                     <Message 
                       key={idx} 
