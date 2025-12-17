@@ -64,7 +64,7 @@ export const streamAI = async (model, apiKey, messages, onChunk) => {
     }));
 
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model.endpoint}:streamGenerateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model.endpoint}:streamGenerateContent?alt=sse&key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,25 +75,36 @@ export const streamAI = async (model, apiKey, messages, onChunk) => {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let fullText = '';
+    let buffer = '';
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       
-      const chunk = decoder.decode(value);
-      try {
-        const lines = chunk.split('\n').filter(line => line.trim());
-        for (const line of lines) {
-          if (line.startsWith('[') || line.startsWith('{')) {
-            const parsed = JSON.parse(line.replace(/^\[|\]$/g, ''));
-            const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            if (text) {
-              fullText += text;
-              onChunk(fullText);
-            }
-          }
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        
+        let jsonStr = trimmed;
+        if (trimmed.startsWith('data:')) {
+          jsonStr = trimmed.slice(5).trim();
         }
-      } catch {}
+        
+        if (!jsonStr || jsonStr === '[DONE]') continue;
+        
+        try {
+          const parsed = JSON.parse(jsonStr);
+          const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          if (text) {
+            fullText += text;
+            onChunk(fullText);
+          }
+        } catch {}
+      }
     }
     return fullText;
   }
