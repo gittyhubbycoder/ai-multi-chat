@@ -160,34 +160,40 @@
 }
 
 /* Glassmorphism Styles (Apple-like liquid glass) */
+:root {
+  --glass-opacity: 0.55;
+  --glass-blur: 22px;
+  --glass-saturate: 160%;
+}
+
 .glass {
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(22px) saturate(160%);
-  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  background: rgba(15, 23, 42, var(--glass-opacity));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.6);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, calc(var(--glass-opacity) * 1.5));
 }
 
 .glass-dark {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(26px) saturate(160%);
-  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  background: rgba(15, 23, 42, calc(var(--glass-opacity) + 0.15));
+  backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(var(--glass-saturate));
   border: 1px solid rgba(148, 163, 184, 0.35);
-  box-shadow: 0 22px 55px rgba(15, 23, 42, 0.7);
+  box-shadow: 0 22px 55px rgba(15, 23, 42, calc(var(--glass-opacity) + 0.15));
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: rgba(15, 23, 42, calc(var(--glass-opacity) + 0.05));
+  backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(calc(var(--glass-saturate) + 20%));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 2px)) saturate(calc(var(--glass-saturate) + 20%));
   border: 1px solid rgba(148, 163, 184, 0.4);
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.6);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, calc(var(--glass-opacity) + 0.05));
 }
 
 .glass-input {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  background: rgba(15, 23, 42, calc(var(--glass-opacity) + 0.15));
+  backdrop-filter: blur(calc(var(--glass-blur) - 2px)) saturate(calc(var(--glass-saturate) + 20%));
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) - 2px)) saturate(calc(var(--glass-saturate) + 20%));
   border: 1px solid rgba(148, 163, 184, 0.5);
 }
 
@@ -339,7 +345,9 @@ const models=[
 {id:'gemini-pro',name:'Gemini 2.5 Pro',provider:'google',endpoint:'gemini-2.0-flash-exp',color:'#4285f4'},
 {id:'cerebras',name:'Cerebras Llama',provider:'cerebras',endpoint:'llama3.3-70b',color:'#8b5cf6'},
 {id:'groq',name:'Groq Llama',provider:'groq',endpoint:'llama-3.3-70b-versatile',color:'#ec4899'},
-{id:'deepseek',name:'DeepSeek V3',provider:'deepseek',endpoint:'deepseek-chat',color:'#10b981'}
+{id:'deepseek',name:'DeepSeek V3',provider:'deepseek',endpoint:'deepseek-chat',color:'#10b981'},
+{id:'mistral',name:'Mistral Large',provider:'mistral',endpoint:'mistral-large-latest',color:'#ff6b35'},
+{id:'alibaba',name:'Alibaba Qwen',provider:'alibaba',endpoint:'qwen-turbo',color:'#ff9500'}
 ];
 
 // Helper function to copy code to clipboard
@@ -427,6 +435,18 @@ const [showTypingIndicator,setShowTypingIndicator]=useState(()=>{
   const saved=localStorage.getItem('showTypingIndicator');
   return saved!==null?JSON.parse(saved):true;
 });
+const [glassOpacity,setGlassOpacity]=useState(()=>{
+  const saved=localStorage.getItem('glassOpacity');
+  return saved!==null?parseFloat(saved):0.55;
+});
+const [glassBlur,setGlassBlur]=useState(()=>{
+  const saved=localStorage.getItem('glassBlur');
+  return saved!==null?parseInt(saved):22;
+});
+const [glassSaturate,setGlassSaturate]=useState(()=>{
+  const saved=localStorage.getItem('glassSaturate');
+  return saved!==null?parseInt(saved):160;
+});
 
 const messagesEndRef=useRef(null);
 const fileInputRef=useRef(null);
@@ -469,6 +489,21 @@ useEffect(()=>{
 useEffect(()=>{
   localStorage.setItem('showTypingIndicator',JSON.stringify(showTypingIndicator));
 },[showTypingIndicator]);
+
+useEffect(()=>{
+  localStorage.setItem('glassOpacity',glassOpacity);
+  document.documentElement.style.setProperty('--glass-opacity',glassOpacity);
+},[glassOpacity]);
+
+useEffect(()=>{
+  localStorage.setItem('glassBlur',glassBlur);
+  document.documentElement.style.setProperty('--glass-blur',glassBlur+'px');
+},[glassBlur]);
+
+useEffect(()=>{
+  localStorage.setItem('glassSaturate',glassSaturate);
+  document.documentElement.style.setProperty('--glass-saturate',glassSaturate+'%');
+},[glassSaturate]);
 
 useEffect(()=>{
 messagesEndRef.current?.scrollIntoView({behavior:'smooth'});
@@ -699,6 +734,22 @@ body:JSON.stringify({model:model.endpoint,messages:history,max_tokens:4096})
 });
 const data=await res.json();
 response=data.choices[0].message.content;
+}else if(model.provider==='mistral'){
+const res=await fetch('https://api.mistral.ai/v1/chat/completions',{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+body:JSON.stringify({model:model.endpoint,messages:history,max_tokens:4096})
+});
+const data=await res.json();
+response=data.choices[0].message.content;
+}else if(model.provider==='alibaba'){
+const res=await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',{
+method:'POST',
+headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+body:JSON.stringify({model:model.endpoint,input:{messages:history},parameters:{max_tokens:4096}})
+});
+const data=await res.json();
+response=data.output.text;
 }
 
 const assistantMsg={role:'assistant',content:response,timestamp:new Date().toISOString()};
@@ -745,7 +796,9 @@ response=data.candidates[0].content.parts[0].text;
 }else{
 const endpoint=model.provider==='cerebras'?'https://api.cerebras.ai/v1/chat/completions':
 model.provider==='groq'?'https://api.groq.com/openai/v1/chat/completions':
-'https://api.deepseek.com/chat/completions';
+model.provider==='deepseek'?'https://api.deepseek.com/chat/completions':
+model.provider==='mistral'?'https://api.mistral.ai/v1/chat/completions':
+'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
 const res=await fetch(endpoint,{
 method:'POST',
 headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
@@ -940,19 +993,25 @@ className="w-full glass-input text-white px-4 py-3 rounded-lg focus:outline-none
 }
 
 if(showSettings){
-return <SettingsScreen 
-  apiKeys={apiKeys} 
-  setApiKeys={setApiKeys} 
-  setShowSettings={setShowSettings} 
-  session={session} 
-  glassmorphism={glassmorphism} 
-  setGlassmorphism={setGlassmorphism} 
-  theme={theme} 
+return <SettingsScreen
+  apiKeys={apiKeys}
+  setApiKeys={setApiKeys}
+  setShowSettings={setShowSettings}
+  session={session}
+  glassmorphism={glassmorphism}
+  setGlassmorphism={setGlassmorphism}
+  theme={theme}
   setTheme={setTheme}
   animatedGradient={animatedGradient}
   setAnimatedGradient={setAnimatedGradient}
   showTypingIndicator={showTypingIndicator}
   setShowTypingIndicator={setShowTypingIndicator}
+  glassOpacity={glassOpacity}
+  setGlassOpacity={setGlassOpacity}
+  glassBlur={glassBlur}
+  setGlassBlur={setGlassBlur}
+  glassSaturate={glassSaturate}
+  setGlassSaturate={setGlassSaturate}
 />;
 }
 
@@ -1041,6 +1100,7 @@ className="p-1 hover:bg-gray-600 rounded"><TrashIcon/></button>
 <button onClick={()=>setShowSidebar(!showSidebar)} className="hidden md:block p-2 glass-card hover:bg-opacity-30 rounded-lg">☰</button>
 <div className="flex-1 min-w-0">
 <div className="font-semibold text-sm md:text-base truncate">{currentChat?.name||'Chat'}</div>
+<div className="text-xs text-gray-400">Tokens: 0 used | 100k remaining | Requests: 50/100</div>
 </div>
 
 {/* Compare Mode Toggle */}
@@ -1160,7 +1220,10 @@ Select models above and start asking questions
 {/* Normal Mode Messages */}
 {!compareMode&&currentChat?.messages?.map((msg,idx)=>(
 <div key={idx} className={`flex mb-4 ${msg.role==='user'?'justify-end':'justify-start'} animate-fade-in`}>
-<div className={`max-w-[85%] md:max-w-[80%] rounded-2xl p-3 md:p-4 glass-card message-content transition-all hover:scale-[1.02] ${msg.role==='user'?'bg-opacity-40':''}`} style={msg.role==='user'?{background: 'rgba(59, 130, 246, 0.3)'}:{}}>
+<div className={`max-w-[85%] md:max-w-[80%] rounded-2xl p-3 md:p-4 glass-card message-content transition-all hover:scale-[1.02] relative group ${msg.role==='user'?'bg-opacity-40':''}`} style={msg.role==='user'?{background: 'rgba(59, 130, 246, 0.3)'}:{}}>
+<button className="absolute top-2 right-2 p-1 glass-card hover:bg-opacity-60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" onClick={()=>copyToClipboard(msg.content)} title="Copy message">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+</button>
 {msg.file&&<div className="text-xs mb-2 opacity-75 flex items-center gap-1">📎 {msg.file.name}</div>}
 {msg.role==='user'?(
 <div className="whitespace-pre-wrap break-words">{msg.content}</div>
@@ -1211,7 +1274,10 @@ No messages yet
 </div>
 ):(
 history.map((msg,idx)=>(
-<div key={idx} className={`glass-card p-3 rounded-lg transition-all hover:bg-opacity-30 ${msg.role==='user'?'bg-opacity-20':'bg-opacity-10'}`}>
+<div key={idx} className={`glass-card p-3 rounded-lg transition-all hover:bg-opacity-30 relative group ${msg.role==='user'?'bg-opacity-20':'bg-opacity-10'}`}>
+<button className="absolute top-1 right-1 p-1 glass-card hover:bg-opacity-60 rounded opacity-0 group-hover:opacity-100 transition-opacity" onClick={()=>copyToClipboard(msg.content)} title="Copy message">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+</button>
 <div className="font-semibold mb-1.5 text-xs opacity-70 flex items-center gap-1">
 {msg.role==='user'?'👤 You':'🤖 AI'}:
 </div>
@@ -1344,14 +1410,16 @@ Clear
 </div>
 );
 }
-function SettingsScreen({apiKeys,setApiKeys,setShowSettings,session,glassmorphism,setGlassmorphism,theme,setTheme,animatedGradient,setAnimatedGradient,showTypingIndicator,setShowTypingIndicator}){
+function SettingsScreen({apiKeys,setApiKeys,setShowSettings,session,glassmorphism,setGlassmorphism,theme,setTheme,animatedGradient,setAnimatedGradient,showTypingIndicator,setShowTypingIndicator,glassOpacity,setGlassOpacity,glassBlur,setGlassBlur,glassSaturate,setGlassSaturate}){
 const [google,setGoogle]=useState(apiKeys.google||'');
 const [cerebras,setCerebras]=useState(apiKeys.cerebras||'');
 const [groq,setGroq]=useState(apiKeys.groq||'');
 const [deepseek,setDeepseek]=useState(apiKeys.deepseek||'');
+const [mistral,setMistral]=useState(apiKeys.mistral||'');
+const [alibaba,setAlibaba]=useState(apiKeys.alibaba||'');
 
 const saveKeys=async()=>{
-const keys={google,cerebras,groq,deepseek};
+const keys={google,cerebras,groq,deepseek,mistral,alibaba};
 for(const [provider,keyValue] of Object.entries(keys)){
 if(!keyValue)continue;
 await supabase.from('api_keys').upsert({
@@ -1388,6 +1456,34 @@ className="sr-only peer"/>
 <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
 </label>
 </div>
+{glassmorphism&&(
+<>
+<div className="flex items-center justify-between p-3 glass-card rounded-lg">
+<div className="flex-1">
+<div className="font-semibold text-sm md:text-base mb-1">Opacity: {glassOpacity.toFixed(2)}</div>
+<div className="text-xs text-gray-300">Background transparency</div>
+</div>
+<input type="range" min="0.1" max="1" step="0.05" value={glassOpacity} onChange={(e)=>setGlassOpacity(parseFloat(e.target.value))}
+className="w-24 md:w-32"/>
+</div>
+<div className="flex items-center justify-between p-3 glass-card rounded-lg">
+<div className="flex-1">
+<div className="font-semibold text-sm md:text-base mb-1">Blur: {glassBlur}px</div>
+<div className="text-xs text-gray-300">Background blur intensity</div>
+</div>
+<input type="range" min="5" max="50" step="1" value={glassBlur} onChange={(e)=>setGlassBlur(parseInt(e.target.value))}
+className="w-24 md:w-32"/>
+</div>
+<div className="flex items-center justify-between p-3 glass-card rounded-lg">
+<div className="flex-1">
+<div className="font-semibold text-sm md:text-base mb-1">Saturation: {glassSaturate}%</div>
+<div className="text-xs text-gray-300">Color vibrancy</div>
+</div>
+<input type="range" min="100" max="300" step="10" value={glassSaturate} onChange={(e)=>setGlassSaturate(parseInt(e.target.value))}
+className="w-24 md:w-32"/>
+</div>
+</>
+)}
 <div className="flex items-center justify-between p-3 glass-card rounded-lg">
 <div>
 <div className="font-semibold text-sm md:text-base mb-1">Animated gradient</div>
@@ -1471,7 +1567,23 @@ className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key 
 <label className="block text-xs md:text-sm font-semibold mb-2">DeepSeek</label>
 <input type="password" value={deepseek} onChange={(e)=>setDeepseek(e.target.value)}
 className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
-<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" 
+<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener"
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
+</div>
+
+<div>
+<label className="block text-xs md:text-sm font-semibold mb-2">Mistral AI</label>
+<input type="password" value={mistral} onChange={(e)=>setMistral(e.target.value)}
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+<a href="https://console.mistral.ai/" target="_blank" rel="noopener"
+className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
+</div>
+
+<div>
+<label className="block text-xs md:text-sm font-semibold mb-2">Alibaba Cloud</label>
+<input type="password" value={alibaba} onChange={(e)=>setAlibaba(e.target.value)}
+className="w-full glass-input text-white px-3 md:px-4 py-2 md:py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"/>
+<a href="https://bailian.console.aliyun.com/" target="_blank" rel="noopener"
 className="text-xs text-blue-300 hover:text-blue-200 mt-1 inline-block">Get key →</a>
 </div>
 
