@@ -5,9 +5,9 @@ interface HistoryMessage {
   content: string;
 }
 
-export const callGenericApi = async (model: Model, apiKey: string, history: HistoryMessage[], file?: AttachedFile): Promise<string> => {
+export const callGenericApi = async (model: Model, apiKey: string, history: HistoryMessage[], file?: AttachedFile, requestConfig?: object): Promise<string> => {
   let endpoint = '';
-  let body: object = {};
+  let body: any = {};
   const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
 
   if (model.provider !== 'google') {
@@ -35,6 +35,9 @@ export const callGenericApi = async (model: Model, apiKey: string, history: Hist
         };
       });
       body = { contents };
+      if (requestConfig) {
+        body.generationConfig = requestConfig;
+      }
       break;
     case 'cerebras':
       endpoint = 'https://api.cerebras.ai/v1/chat/completions';
@@ -75,6 +78,10 @@ export const callGenericApi = async (model: Model, apiKey: string, history: Hist
   const data = await res.json();
 
   if (model.provider === 'google') {
+    // For JSON mode, the response is directly in the text part
+    if (body.generationConfig?.responseMimeType === "application/json") {
+      return data.candidates[0].content.parts[0].text;
+    }
     if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
       return data.candidates[0].content.parts[0].text;
     }
