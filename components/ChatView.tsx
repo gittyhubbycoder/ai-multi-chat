@@ -390,8 +390,8 @@ const ChatView: React.FC<ChatViewProps> = ({
                 required: ['recommendation', 'models'],
             };
 
-            const analyzerModel = allModels.find(m => m.id === 'gemini-pro');
-            if (!analyzerModel) throw new Error("Analyzer model (Gemini Pro) is not configured.");
+            const analyzerModel = allModels.find(m => m.id === 'gemini-flash-latest');
+            if (!analyzerModel) throw new Error("Analyzer model (Gemini Flash Latest) is not configured.");
             
             const generationConfig = {
                 responseMimeType: "application/json",
