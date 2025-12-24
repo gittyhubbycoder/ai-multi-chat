@@ -1,17 +1,41 @@
-
-import type { Model } from '../types';
+import type { Model, AttachedFile } from '../types';
 
 interface HistoryMessage {
   role: 'user' | 'assistant';
   content: string;
 }
 
-export const callGenericApi = async (model: Model, apiKey: string, history: HistoryMessage[]): Promise<string> => {
+export const callGenericApi = async (model: Model, apiKey: string, history: HistoryMessage[], file?: AttachedFile): Promise<string> => {
   let endpoint = '';
   let body: object = {};
-  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` };
+  const headers: { [key: string]: string } = { 'Content-Type': 'application/json' };
+
+  if (model.provider !== 'google') {
+    headers['Authorization'] = `Bearer ${apiKey}`;
+  }
 
   switch (model.provider) {
+    case 'google':
+      endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model.endpoint}:generateContent?key=${apiKey}`;
+      const contents = history.map((msg, index) => {
+        const isLastMessage = index === history.length - 1;
+        const textContent = typeof msg.content === 'string' ? msg.content : '';
+        const parts: any[] = [{ text: textContent }];
+        if (isLastMessage && file) {
+            parts.push({
+                inline_data: {
+                    mime_type: file.type,
+                    data: file.data
+                }
+            });
+        }
+        return {
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: parts
+        };
+      });
+      body = { contents };
+      break;
     case 'cerebras':
       endpoint = 'https://api.cerebras.ai/v1/chat/completions';
       body = { model: model.endpoint, messages: history, max_tokens: 4096 };
@@ -43,19 +67,33 @@ export const callGenericApi = async (model: Model, apiKey: string, history: Hist
   });
 
   if (!res.ok) {
-    const errorData = await res.json();
-    throw new Error(`API Error from ${model.provider}: ${errorData.error?.message || res.statusText}`);
+    const errorData = await res.json().catch(() => ({})); // Gracefully handle non-json error responses
+    const errorMessage = errorData?.error?.message || res.statusText;
+    throw new Error(`API Error from ${model.provider}: ${errorMessage}`);
   }
 
   const data = await res.json();
 
+  if (model.provider === 'google') {
+    if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return data.candidates[0].content.parts[0].text;
+    }
+    if (data.candidates?.[0]?.finishReason === 'SAFETY' || data.promptFeedback?.blockReason) {
+      const reason = data.promptFeedback?.blockReason || 'SAFETY';
+      return `Request was blocked by the API for the following reason: ${reason}.`;
+    }
+  }
+
   if (model.provider === 'alibaba') {
-    return data.output.text;
+    if (data.output?.text) {
+        return data.output.text;
+    }
   }
   
-  if (data.choices && data.choices[0] && data.choices[0].message) {
+  if (data.choices?.[0]?.message?.content) {
       return data.choices[0].message.content;
   }
 
+  console.error("Unexpected response structure:", data);
   throw new Error(`Unexpected response structure from ${model.provider}`);
 };

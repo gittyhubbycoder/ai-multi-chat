@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../services/supabase';
-import { generateGeminiContent } from '../services/geminiService';
 import { callGenericApi } from '../services/apiService';
 import { allModels, modelsByProvider, providers, ADMIN_EMAIL } from '../constants';
 import MarkdownRenderer from './MarkdownRenderer';
@@ -10,7 +9,7 @@ import {
     MenuIcon, CloseIcon, ArrowRightIcon, CopyIcon
 } from './Icons';
 import type { Session, User } from '@supabase/supabase-js';
-import type { ApiKeySet, AttachedFile, BiasAnalysis, Chat, CompareResponses, Message } from '../types';
+import type { ApiKeySet, AttachedFile, BiasAnalysis, Chat, CompareResponses, Message, Model } from '../types';
 
 interface ChatViewProps {
     session: Session;
@@ -189,12 +188,15 @@ const ChatView: React.FC<ChatViewProps> = ({
             const enhancementInstruction = `You are a prompt-enhancing assistant. Rewrite the following user prompt to be more detailed, clear, and effective for a large language model. Your goal is to elicit a high-quality, comprehensive response. Return ONLY the enhanced prompt, without any explanation, preamble, or markdown formatting like quotes.
             
             Original prompt: "${input}"`;
+
+            const enhancerModel = allModels.find(m => m.id === 'gemini-flash');
+            if (!enhancerModel) throw new Error("Enhancer model is not configured.");
             
-            const enhancedText = await generateGeminiContent({
-                modelName: 'gemini-flash-latest',
-                apiKey: googleApiKey,
-                history: [{ role: 'user', content: enhancementInstruction }],
-            });
+            const enhancedText = await callGenericApi(
+                enhancerModel,
+                googleApiKey,
+                [{ role: 'user', content: enhancementInstruction }]
+            );
 
             const cleanedText = enhancedText.trim().replace(/^"|"$/g, '').replace(/^prompt:/i, '').trim();
             setInput(cleanedText);
@@ -247,25 +249,15 @@ const ChatView: React.FC<ChatViewProps> = ({
     
         try {
             const history = newMsgs.map(m => ({ role: m.role, content: m.content }));
-            let responseText: string;
-    
-            if (model.provider === 'google') {
-                responseText = await generateGeminiContent({
-                    modelName: model.endpoint,
-                    apiKey: apiKey,
-                    history: history,
-                    file: userMsg.file
-                });
-            } else {
-                responseText = await callGenericApi(model, apiKey, history);
-            }
+            const responseText = await callGenericApi(model, apiKey, history, userMsg.file);
     
             const assistantMsg: Message = { role: 'assistant', content: responseText, timestamp: new Date().toISOString() };
             const finalMsgs = [...newMsgs, assistantMsg];
             updateChat(currentChat.id, { messages: finalMsgs });
         } catch (error: any) {
             alert(`Error: ${error.message}`);
-            setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs.slice(0, -1) } : c));
+            // If the API call fails, we can keep the user's message in the chat
+            // Or we could remove it: setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs.slice(0, -1) } : c));
         } finally {
             setLoading(false);
         }
@@ -293,17 +285,7 @@ const ChatView: React.FC<ChatViewProps> = ({
 
             const history: { role: 'user' | 'assistant'; content: string }[] = [...(compareResponses[modelId] || []), { role: 'user', content: userPrompt }];
             try {
-                let responseText: string;
-                if (model.provider === 'google') {
-                    responseText = await generateGeminiContent({
-                        modelName: model.endpoint,
-                        apiKey: apiKey,
-                        history: history,
-                        file: attachedFile || undefined
-                    });
-                } else {
-                    responseText = await callGenericApi(model, apiKey, history);
-                }
+                const responseText = await callGenericApi(model, apiKey, history, attachedFile || undefined);
                 newResponses[modelId] = [...history, { role: 'assistant', content: responseText }];
             } catch (error: any) {
                 newResponses[modelId] = [...history, { role: 'assistant', content: `Error: ${error.message}` }];
