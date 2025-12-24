@@ -1,0 +1,5 @@
+{
+  "name": "Multi-AI Chat",
+  "description": "An advanced AI chat application with a flagship 'Compare Mode' to interact with and compare multiple AI models side-by-side. Features customizable themes, API key management, and a streamlined user interface.",
+  "requestFramePermissions": []
+}
