@@ -321,24 +321,24 @@ const ChatView: React.FC<ChatViewProps> = ({
 
     const analyzeBias = async () => {
         if (!currentChat || !compareMode || Object.keys(compareResponses).length === 0) return;
-
-        const googleApiKey = apiKeys['google'];
-        if (!googleApiKey) {
-            alert('Please add a Google API key in settings to perform analysis.');
+    
+        const cerebrasApiKey = apiKeys['cerebras'];
+        if (!cerebrasApiKey) {
+            alert('Please add a Cerebras API key in settings to perform analysis.');
             setView('settings');
             return;
         }
-
+    
         setAnalyzingBias(true);
         setBiasAnalysis(null);
-
+    
         try {
             const lastUserMessage = Object.values(compareResponses)[0].filter(m => m.role === 'user').pop();
             if (!lastUserMessage) {
                 throw new Error("Could not find the user's prompt to analyze.");
             }
             const userPrompt = lastUserMessage.content;
-
+    
             const responsesToAnalyze = selectedModelsForCompare.map(modelId => {
                 const model = allModels.find(m => m.id === modelId);
                 const lastResponse = compareResponses[modelId]?.filter(m => m.role === 'assistant').pop();
@@ -347,9 +347,9 @@ const ChatView: React.FC<ChatViewProps> = ({
                     response: lastResponse?.content || "No response generated."
                 };
             });
-
+    
             const responsesString = responsesToAnalyze.map(r => `--- MODEL: ${r.name} ---\n${r.response}\n`).join('\n');
-
+    
             const analysisPrompt = `
             You are an expert AI model evaluator. Your task is to analyze a set of AI-generated responses to a user's prompt. Evaluate each response based on the following criteria:
             1.  **Bias**: How neutral and objective is the response? Does it favor any particular viewpoint, group, or ideology unfairly? A high score (100) means very low bias.
@@ -363,52 +363,41 @@ const ChatView: React.FC<ChatViewProps> = ({
             AI Responses:
             ${responsesString}
 
-            Return your analysis as a single JSON object, and nothing else. The JSON object must conform to the schema provided. For each model, provide a numeric score from 0 (poor) to 100 (excellent) for each criterion, along with a brief summary of your reasoning. Finally, provide an overall 'recommendation' suggesting which response is the best and why.
+            Your task is to return your analysis as a single JSON object. For each model, provide a numeric score from 0 (poor) to 100 (excellent) for each criterion, along with a brief summary of your reasoning. Finally, provide an overall 'recommendation' suggesting which response is the best and why.
+
+            The JSON object must have the following structure:
+            {
+              "recommendation": "string",
+              "models": [
+                {
+                  "name": "string",
+                  "bias": "number",
+                  "credibility": "number",
+                  "completeness": "number",
+                  "clarity": "number",
+                  "summary": "string"
+                }
+              ]
+            }
+
+            IMPORTANT: Your entire response must be ONLY the raw JSON object, without any surrounding text, explanations, or markdown code fences (like \`\`\`json). The response must start with "{" and end with "}".
             `;
-
-            const schema = {
-                type: 'OBJECT',
-                properties: {
-                    recommendation: { type: 'STRING', description: "Overall recommendation of the best model and why." },
-                    models: {
-                    type: 'ARRAY',
-                    description: "Analysis for each model's response.",
-                    items: {
-                        type: 'OBJECT',
-                        properties: {
-                        name: { type: 'STRING', description: "Name of the model." },
-                        bias: { type: 'NUMBER', description: "Bias score (0-100, 100 is least biased)." },
-                        credibility: { type: 'NUMBER', description: "Credibility score (0-100)." },
-                        completeness: { type: 'NUMBER', description: "Completeness score (0-100)." },
-                        clarity: { type: 'NUMBER', description: "Clarity score (0-100)." },
-                        summary: { type: 'STRING', description: "Brief summary of the analysis for this model." },
-                        },
-                        required: ['name', 'bias', 'credibility', 'completeness', 'clarity', 'summary'],
-                    },
-                    },
-                },
-                required: ['recommendation', 'models'],
-            };
-
-            const analyzerModel = allModels.find(m => m.id === 'gemini-flash-latest');
-            if (!analyzerModel) throw new Error("Analyzer model (Gemini Flash Latest) is not configured.");
+    
+            const analyzerModel = allModels.find(m => m.id === 'cerebras-llama');
+            if (!analyzerModel) throw new Error("Analyzer model (Cerebras Llama) is not configured.");
             
-            const generationConfig = {
-                responseMimeType: "application/json",
-                responseSchema: schema,
-            };
-
-            const analysisJsonString = await callGenericApi(
+            const analysisJsonStringRaw = await callGenericApi(
                 analyzerModel,
-                googleApiKey,
-                [{ role: 'user', content: analysisPrompt }],
-                undefined,
-                generationConfig
+                cerebrasApiKey,
+                [{ role: 'user', content: analysisPrompt }]
             );
-
-            const analysisResult: BiasAnalysis = JSON.parse(analysisJsonString);
+    
+            // Clean the response to ensure it's valid JSON before parsing
+            const cleanedJsonString = analysisJsonStringRaw.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+            const analysisResult: BiasAnalysis = JSON.parse(cleanedJsonString);
             setBiasAnalysis(analysisResult);
-
+    
         } catch (error: any) {
             alert(`Error during analysis: ${error.message}`);
         } finally {
