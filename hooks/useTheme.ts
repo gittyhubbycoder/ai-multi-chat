@@ -17,9 +17,9 @@ export const useTheme = () => {
     theme: getInitialState('theme', 'dark'),
     animatedGradient: getInitialState('animatedGradient', true),
     showTypingIndicator: getInitialState('showTypingIndicator', true),
-    glassOpacity: getInitialState('glassOpacity', 0.55),
-    glassBlur: getInitialState('glassBlur', 22),
-    glassSaturate: getInitialState('glassSaturate', 160),
+    glassOpacity: getInitialState('glassOpacity', 0.1),
+    glassBlur: getInitialState('glassBlur', 16),
+    glassSaturate: getInitialState('glassSaturate', 180),
   });
 
   useEffect(() => {
