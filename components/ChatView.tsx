@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../services/supabase';
 import { generateGeminiContent } from '../services/geminiService';
@@ -6,7 +5,7 @@ import { callGenericApi } from '../services/apiService';
 import { allModels, modelsByProvider, providers, ADMIN_EMAIL } from '../constants';
 import MarkdownRenderer from './MarkdownRenderer';
 import {
-    SendIcon, UserIcon, SettingsSlidersIcon, LogOutIcon, TrashIcon, PlusIcon, MessageIcon,
+    SendIcon, UserIcon, SettingsIcon, LogOutIcon, TrashIcon, PlusIcon, MessageIcon,
     EditIcon, ShieldIcon, ImageIcon, PaperclipIcon, SparklesIcon, ColumnsIcon, AnalyzeIcon,
     MenuIcon, CloseIcon, ArrowRightIcon, CopyIcon
 } from './Icons';
@@ -192,16 +191,15 @@ const ChatView: React.FC<ChatViewProps> = ({
             Original prompt: "${input}"`;
             
             const enhancedText = await generateGeminiContent(
-                'gemini-flash-latest', // Use a fast model for this
+                'gemini-flash-latest',
+                googleApiKey,
                 [{ role: 'user', content: enhancementInstruction }],
-                undefined // No file for enhancement
+                undefined
             );
 
-            // Clean up the response to ensure it's just the prompt
             const cleanedText = enhancedText.trim().replace(/^"|"$/g, '').replace(/^prompt:/i, '').trim();
             setInput(cleanedText);
             
-            // Focus the input field after enhancing
             if (inputRef.current) {
                 inputRef.current.focus();
             }
@@ -238,7 +236,6 @@ const ChatView: React.FC<ChatViewProps> = ({
         const userMsg: Message = { role: 'user', content: input, file: attachedFile, timestamp: new Date().toISOString() };
         const newMsgs = [...(currentChat.messages || []), userMsg];
         
-        // Optimistically update UI
         setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs } : c));
         if ((currentChat.messages?.length || 0) === 0 && currentChat.name === 'New Chat') {
             const newName = input.slice(0, 30) + (input.length > 30 ? '...' : '');
@@ -254,7 +251,7 @@ const ChatView: React.FC<ChatViewProps> = ({
             let responseText: string;
     
             if (model.provider === 'google') {
-                responseText = await generateGeminiContent(model.endpoint, history, userMsg.file);
+                responseText = await generateGeminiContent(model.endpoint, apiKey, history, userMsg.file);
             } else {
                 responseText = await callGenericApi(model, apiKey, history);
             }
@@ -264,7 +261,6 @@ const ChatView: React.FC<ChatViewProps> = ({
             updateChat(currentChat.id, { messages: finalMsgs });
         } catch (error: any) {
             alert(`Error: ${error.message}`);
-            // Revert optimistic update on error
             setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs.slice(0, -1) } : c));
         } finally {
             setLoading(false);
@@ -291,13 +287,11 @@ const ChatView: React.FC<ChatViewProps> = ({
                 return;
             }
 
-            // FIX: Explicitly type `history` to prevent TypeScript from widening the `role` property to `string`.
-            // This resolves the type errors when calling `generateGeminiContent` and `callGenericApi`.
             const history: { role: 'user' | 'assistant'; content: string }[] = [...(compareResponses[modelId] || []), { role: 'user', content: userPrompt }];
             try {
                 let responseText: string;
                 if (model.provider === 'google') {
-                    responseText = await generateGeminiContent(model.endpoint, history, attachedFile || undefined);
+                    responseText = await generateGeminiContent(model.endpoint, apiKey, history, attachedFile || undefined);
                 } else {
                     responseText = await callGenericApi(model, apiKey, history);
                 }
@@ -345,10 +339,8 @@ const ChatView: React.FC<ChatViewProps> = ({
 
     return (
         <div className="flex h-screen text-white overflow-hidden">
-            {/* Mobile Overlay */}
             {showSidebar && <div className="md:hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40" onClick={() => setShowSidebar(false)} />}
 
-            {/* Sidebar */}
             <div className={`${showSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-50 md:z-auto w-64 glass-dark border-r border-white border-opacity-20 flex flex-col transition-transform h-full`}>
                 <div className="p-3 md:p-4 border-b border-white border-opacity-20 space-y-2">
                     <button onClick={() => { createNewChat(user.id); setShowSidebar(false); }}
@@ -405,7 +397,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                     </div>
                     <div className="flex gap-2">
                         <button onClick={() => setView('settings')} className="flex-1 p-2 glass-card hover:bg-opacity-30 rounded-lg flex justify-center items-center">
-                            <SettingsSlidersIcon />
+                            <SettingsIcon />
                         </button>
                         <button onClick={() => supabase.auth.signOut()} className="p-2 glass-card hover:bg-opacity-30 rounded-lg flex justify-center items-center">
                             <LogOutIcon />
@@ -414,7 +406,6 @@ const ChatView: React.FC<ChatViewProps> = ({
                 </div>
             </div>
 
-            {/* Main Chat Area */}
             <div className="flex-1 flex flex-col min-w-0">
               <div className="glass-dark border-b border-white border-opacity-20 p-3 md:p-4 flex items-center gap-2 flex-wrap">
                   <button onClick={() => setShowSidebar(!showSidebar)} className="md:hidden p-2 glass-card hover:bg-opacity-30 rounded-lg">
@@ -473,9 +464,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                 </div>
               )}
               
-                {/* Messages Area */}
                 <div className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar">
-                    {/* Empty State */}
                     {(!currentChat?.messages || currentChat.messages.length === 0) && !compareMode && Object.keys(compareResponses).length === 0 && (
                         <div className="text-center text-gray-300 mt-10 md:mt-20">
                             <div className="text-4xl md:text-6xl mb-4">👋</div>
@@ -486,7 +475,6 @@ const ChatView: React.FC<ChatViewProps> = ({
                         </div>
                     )}
                     
-                    {/* Normal Chat Messages */}
                     {!compareMode && currentChat?.messages?.map((msg, idx) => (
                         <div key={idx} className={`flex mb-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
                             <div className={`max-w-[85%] md:max-w-[80%] rounded-2xl p-3 md:p-4 glass-card message-content transition-all hover:scale-[1.02] relative group ${msg.role === 'user' ? 'bg-opacity-40' : ''}`} style={msg.role === 'user' ? { background: 'rgba(59, 130, 246, 0.3)' } : {}}>
@@ -502,7 +490,6 @@ const ChatView: React.FC<ChatViewProps> = ({
                         </div>
                     ))}
 
-                    {/* Compare Mode */}
                     {compareMode && (
                         <div className="flex overflow-x-auto custom-scrollbar pb-4 gap-4 -mx-4 px-4">
                         {selectedModelsForCompare.map(modelId => {
@@ -549,7 +536,6 @@ const ChatView: React.FC<ChatViewProps> = ({
                     )}
                     <div ref={messagesEndRef} />
                 </div>
-                {/* Input Area */}
                 <div className="glass-dark border-t border-white border-opacity-20 p-2 md:p-4">
                     {attachedFile && (
                         <div className="mb-2 flex items-center gap-2 glass-card p-2 rounded text-xs md:text-sm">

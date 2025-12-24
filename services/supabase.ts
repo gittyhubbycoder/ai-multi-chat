@@ -1,7 +1,15 @@
-// FIX: Add a triple-slash directive to include Vite's client types, which defines `import.meta.env` for TypeScript.
-/// <reference types="vite/client" />
-
 import { createClient } from '@supabase/supabase-js';
+
+// FIX: Manually define types for Vite environment variables as a workaround for project configuration issues.
+// This resolves "Cannot find type definition file for 'vite/client'" and errors on `import.meta.env`.
+declare global {
+  interface ImportMeta {
+    readonly env: {
+      readonly VITE_SUPABASE_URL: string;
+      readonly VITE_SUPABASE_ANON_KEY: string;
+    };
+  }
+}
 
 // IMPORTANT: These are now read from your .env.local file for local development
 // and from Vercel's environment variables when deployed.
