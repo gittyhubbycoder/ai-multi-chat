@@ -190,12 +190,11 @@ const ChatView: React.FC<ChatViewProps> = ({
             
             Original prompt: "${input}"`;
             
-            const enhancedText = await generateGeminiContent(
-                'gemini-flash-latest',
-                googleApiKey,
-                [{ role: 'user', content: enhancementInstruction }],
-                undefined
-            );
+            const enhancedText = await generateGeminiContent({
+                modelName: 'gemini-flash-latest',
+                apiKey: googleApiKey,
+                history: [{ role: 'user', content: enhancementInstruction }],
+            });
 
             const cleanedText = enhancedText.trim().replace(/^"|"$/g, '').replace(/^prompt:/i, '').trim();
             setInput(cleanedText);
@@ -251,7 +250,12 @@ const ChatView: React.FC<ChatViewProps> = ({
             let responseText: string;
     
             if (model.provider === 'google') {
-                responseText = await generateGeminiContent(model.endpoint, apiKey, history, userMsg.file);
+                responseText = await generateGeminiContent({
+                    modelName: model.endpoint,
+                    apiKey: apiKey,
+                    history: history,
+                    file: userMsg.file
+                });
             } else {
                 responseText = await callGenericApi(model, apiKey, history);
             }
@@ -291,7 +295,12 @@ const ChatView: React.FC<ChatViewProps> = ({
             try {
                 let responseText: string;
                 if (model.provider === 'google') {
-                    responseText = await generateGeminiContent(model.endpoint, apiKey, history, attachedFile || undefined);
+                    responseText = await generateGeminiContent({
+                        modelName: model.endpoint,
+                        apiKey: apiKey,
+                        history: history,
+                        file: attachedFile || undefined
+                    });
                 } else {
                     responseText = await callGenericApi(model, apiKey, history);
                 }

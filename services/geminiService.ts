@@ -6,17 +6,19 @@ interface HistoryMessage {
   content: string;
 }
 
-export const generateGeminiContent = async (
-  modelName: string,
-  apiKey: string, // API key is now passed as an argument
-  history: HistoryMessage[],
-  file?: AttachedFile
-): Promise<string> => {
+interface GenerateContentParams {
+  modelName: string;
+  apiKey: string;
+  history: HistoryMessage[];
+  file?: AttachedFile;
+}
+
+export const generateGeminiContent = async (params: GenerateContentParams): Promise<string> => {
+  const { modelName, apiKey, history, file } = params;
   try {
     if (!apiKey) {
       throw new Error("Google API key is missing. Please add it in settings.");
     }
-    // A new client is created for each request using the provided key.
     const ai = new GoogleGenAI({ apiKey: apiKey });
 
     if (history.length === 0) {
@@ -25,10 +27,7 @@ export const generateGeminiContent = async (
 
     const contents = history.map((msg, index) => {
       const isLastMessage = index === history.length - 1;
-      
-      // Defensive check: Ensure content is a string to prevent SDK errors.
       const textContent = typeof msg.content === 'string' ? msg.content : '';
-
       const parts: ({ text: string } | { inlineData: { mimeType: string; data: string } })[] = [{ text: textContent }];
       
       if (isLastMessage && file) {
@@ -59,7 +58,6 @@ export const generateGeminiContent = async (
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     if (error instanceof Error) {
-        // The error "e.map is not a function" is often from the SDK failing on a malformed request.
         return `Error with Gemini API: ${error.message}`;
     }
     return "An unknown error occurred with the Gemini API.";
