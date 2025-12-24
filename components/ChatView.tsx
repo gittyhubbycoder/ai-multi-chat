@@ -74,9 +74,7 @@ const ChatView: React.FC<ChatViewProps> = ({
     useEffect(() => {
         const textarea = inputRef.current;
         if (textarea) {
-            // Temporarily reset height to calculate the new scrollHeight accurately
             textarea.style.height = 'auto';
-            // Set the height to the scroll height, respecting the maxHeight from CSS/style prop
             textarea.style.height = `${textarea.scrollHeight}px`;
         }
     }, [input]);
@@ -256,8 +254,6 @@ const ChatView: React.FC<ChatViewProps> = ({
             updateChat(currentChat.id, { messages: finalMsgs });
         } catch (error: any) {
             alert(`Error: ${error.message}`);
-            // If the API call fails, we can keep the user's message in the chat
-            // Or we could remove it: setChats(chats.map(c => c.id === currentChatId ? { ...c, messages: newMsgs.slice(0, -1) } : c));
         } finally {
             setLoading(false);
         }
@@ -324,12 +320,147 @@ const ChatView: React.FC<ChatViewProps> = ({
     }
 
     const analyzeBias = async () => {
-      // implementation omitted for brevity
+        if (!currentChat || !compareMode || Object.keys(compareResponses).length === 0) return;
+
+        const googleApiKey = apiKeys['google'];
+        if (!googleApiKey) {
+            alert('Please add a Google API key in settings to perform analysis.');
+            setView('settings');
+            return;
+        }
+
+        setAnalyzingBias(true);
+        setBiasAnalysis(null);
+
+        try {
+            const lastUserMessage = Object.values(compareResponses)[0].filter(m => m.role === 'user').pop();
+            if (!lastUserMessage) {
+                throw new Error("Could not find the user's prompt to analyze.");
+            }
+            const userPrompt = lastUserMessage.content;
+
+            const responsesToAnalyze = selectedModelsForCompare.map(modelId => {
+                const model = allModels.find(m => m.id === modelId);
+                const lastResponse = compareResponses[modelId]?.filter(m => m.role === 'assistant').pop();
+                return {
+                    name: model?.name || modelId,
+                    response: lastResponse?.content || "No response generated."
+                };
+            });
+
+            const responsesString = responsesToAnalyze.map(r => `--- MODEL: ${r.name} ---\n${r.response}\n`).join('\n');
+
+            const analysisPrompt = `
+            You are an expert AI model evaluator. Your task is to analyze a set of AI-generated responses to a user's prompt. Evaluate each response based on the following criteria:
+            1.  **Bias**: How neutral and objective is the response? Does it favor any particular viewpoint, group, or ideology unfairly? A high score (100) means very low bias.
+            2.  **Credibility**: How trustworthy and accurate is the information provided? A high score (100) means highly credible.
+            3.  **Completeness**: Does the response fully address all parts of the user's prompt? A high score (100) means it is very comprehensive.
+            4.  **Clarity**: How easy is the response to understand? Is it well-structured and free of jargon? A high score (100) means it is very clear.
+
+            User Prompt:
+            "${userPrompt}"
+
+            AI Responses:
+            ${responsesString}
+
+            Return your analysis as a single JSON object, and nothing else. The JSON object must conform to the schema provided. For each model, provide a numeric score from 0 (poor) to 100 (excellent) for each criterion, along with a brief summary of your reasoning. Finally, provide an overall 'recommendation' suggesting which response is the best and why.
+            `;
+
+            const schema = {
+                type: 'OBJECT',
+                properties: {
+                    recommendation: { type: 'STRING', description: "Overall recommendation of the best model and why." },
+                    models: {
+                    type: 'ARRAY',
+                    description: "Analysis for each model's response.",
+                    items: {
+                        type: 'OBJECT',
+                        properties: {
+                        name: { type: 'STRING', description: "Name of the model." },
+                        bias: { type: 'NUMBER', description: "Bias score (0-100, 100 is least biased)." },
+                        credibility: { type: 'NUMBER', description: "Credibility score (0-100)." },
+                        completeness: { type: 'NUMBER', description: "Completeness score (0-100)." },
+                        clarity: { type: 'NUMBER', description: "Clarity score (0-100)." },
+                        summary: { type: 'STRING', description: "Brief summary of the analysis for this model." },
+                        },
+                        required: ['name', 'bias', 'credibility', 'completeness', 'clarity', 'summary'],
+                    },
+                    },
+                },
+                required: ['recommendation', 'models'],
+            };
+
+            const analyzerModel = allModels.find(m => m.id === 'gemini-pro');
+            if (!analyzerModel) throw new Error("Analyzer model (Gemini Pro) is not configured.");
+            
+            const generationConfig = {
+                responseMimeType: "application/json",
+                responseSchema: schema,
+            };
+
+            const analysisJsonString = await callGenericApi(
+                analyzerModel,
+                googleApiKey,
+                [{ role: 'user', content: analysisPrompt }],
+                undefined,
+                generationConfig
+            );
+
+            const analysisResult: BiasAnalysis = JSON.parse(analysisJsonString);
+            setBiasAnalysis(analysisResult);
+
+        } catch (error: any) {
+            alert(`Error during analysis: ${error.message}`);
+        } finally {
+            setAnalyzingBias(false);
+        }
+    };
+    
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return 'bg-green-500';
+        if (score >= 50) return 'bg-yellow-500';
+        return 'bg-red-500';
     };
 
+    const ProgressBar: React.FC<{ score: number }> = ({ score }) => (
+        <div className="w-full bg-gray-700 rounded-full h-2.5">
+            <div className={`${getScoreColor(score)} h-2.5 rounded-full`} style={{ width: `${score}%` }}></div>
+        </div>
+    );
 
     return (
         <div className="flex h-screen text-white overflow-hidden">
+            {biasAnalysis && (
+                <div className="fixed inset-0 bg-black bg-opacity-70 z-[60] flex items-center justify-center p-4 animate-fade-in" onClick={() => setBiasAnalysis(null)}>
+                    <div className="glass-dark rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar p-6 md:p-8" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2"><AnalyzeIcon /> Bias & Quality Analysis</h2>
+                            <button onClick={() => setBiasAnalysis(null)} className="p-2 glass-card hover:bg-opacity-50 rounded-full"><CloseIcon /></button>
+                        </div>
+                        
+                        <div className="mb-6 glass-card p-4 rounded-lg bg-blue-500/20 border border-blue-400/50">
+                            <h3 className="font-semibold mb-2 text-md md:text-lg text-blue-300">🏆 Recommendation</h3>
+                            <p className="text-sm md:text-base">{biasAnalysis.recommendation}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {biasAnalysis.models.map(modelAnalysis => (
+                                <div key={modelAnalysis.name} className="glass-card p-4 rounded-lg flex flex-col gap-3">
+                                    <h4 className="font-bold text-md">{modelAnalysis.name}</h4>
+                                    <div className="space-y-3 text-xs">
+                                        <div className="flex items-center justify-between gap-2"><span>Bias</span><div className="w-2/3 flex items-center gap-2"><ProgressBar score={modelAnalysis.bias} /><span className="w-8 text-right font-mono">{modelAnalysis.bias}</span></div></div>
+                                        <div className="flex items-center justify-between gap-2"><span>Credibility</span><div className="w-2/3 flex items-center gap-2"><ProgressBar score={modelAnalysis.credibility} /><span className="w-8 text-right font-mono">{modelAnalysis.credibility}</span></div></div>
+                                        <div className="flex items-center justify-between gap-2"><span>Completeness</span><div className="w-2/3 flex items-center gap-2"><ProgressBar score={modelAnalysis.completeness} /><span className="w-8 text-right font-mono">{modelAnalysis.completeness}</span></div></div>
+                                        <div className="flex items-center justify-between gap-2"><span>Clarity</span><div className="w-2/3 flex items-center gap-2"><ProgressBar score={modelAnalysis.clarity} /><span className="w-8 text-right font-mono">{modelAnalysis.clarity}</span></div></div>
+                                    </div>
+                                    <p className="text-xs text-gray-300 mt-2 bg-black/20 p-2 rounded-md">{modelAnalysis.summary}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {showSidebar && <div className="md:hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40" onClick={() => setShowSidebar(false)} />}
 
             <div className={`${showSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-50 md:z-auto w-64 glass-dark border-r border-white border-opacity-20 flex flex-col transition-transform h-full`}>
@@ -482,37 +613,55 @@ const ChatView: React.FC<ChatViewProps> = ({
                     ))}
 
                     {compareMode && (
-                        <div className="flex overflow-x-auto custom-scrollbar pb-4 gap-4 -mx-4 px-4">
-                        {selectedModelsForCompare.map(modelId => {
-                            const model = allModels.find(m => m.id === modelId);
-                            if (!model) return null;
-                            const history = compareResponses[modelId] || [];
-                            return (
-                                <div key={modelId} className="compare-column flex-shrink-0 w-[90%] md:w-[45%] lg:w-[48%] xl:w-[32%] glass-card rounded-lg p-3 md:p-4 transition-all">
-                                    <h3 className="font-bold text-sm md:text-base flex items-center gap-2 mb-3 sticky top-0 bg-inherit pt-1 pb-2 border-b border-white/20">
-                                        <div className="w-3 h-3 rounded-full shadow-lg" style={{backgroundColor: providers.find(p=>p.id===model.provider)?.color}} />
-                                        {model.name}
-                                        <button onClick={() => continueWithModel(model.id)} className="ml-auto text-xs glass-button px-2 py-1 rounded-md">Continue</button>
-                                    </h3>
-                                    <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2">
-                                    {history.map((msg, idx) => (
-                                        <div key={idx} className={`glass-card p-3 rounded-lg relative group text-sm ${msg.role==='user'?'bg-opacity-20':'bg-opacity-10'}`}>
-                                             <div className="font-semibold mb-1.5 text-xs opacity-70 flex items-center gap-1">
-                                                {msg.role==='user'?'👤 You':'🤖 AI'}:
-                                            </div>
-                                            {msg.role === 'user' ?
-                                                (<div className="whitespace-pre-wrap break-words">{msg.content}</div>) :
-                                                (<MarkdownRenderer content={msg.content} />)
-                                            }
-                                        </div>
-                                    ))}
-                                    </div>
+                        <>
+                            {Object.keys(compareResponses).length > 0 && (
+                                <div className="text-center my-4">
+                                    <button onClick={analyzeBias} disabled={loading || analyzingBias} className="glass-button hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 mx-auto disabled:opacity-50" style={{ background: 'rgba(168, 85, 247, 0.4)' }}>
+                                        {analyzingBias ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+                                                Analyzing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <AnalyzeIcon />
+                                                Analyze Responses
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
-                            );
-                        })}
-                        </div>
+                            )}
+                            <div className="flex overflow-x-auto custom-scrollbar pb-4 gap-4 -mx-4 px-4">
+                            {selectedModelsForCompare.map(modelId => {
+                                const model = allModels.find(m => m.id === modelId);
+                                if (!model) return null;
+                                const history = compareResponses[modelId] || [];
+                                return (
+                                    <div key={modelId} className="compare-column flex-shrink-0 w-[90%] md:w-[45%] lg:w-[48%] xl:w-[32%] glass-card rounded-lg p-3 md:p-4 transition-all">
+                                        <h3 className="font-bold text-sm md:text-base flex items-center gap-2 mb-3 sticky top-0 bg-inherit pt-1 pb-2 border-b border-white/20">
+                                            <div className="w-3 h-3 rounded-full shadow-lg" style={{backgroundColor: providers.find(p=>p.id===model.provider)?.color}} />
+                                            {model.name}
+                                            <button onClick={() => continueWithModel(model.id)} className="ml-auto text-xs glass-button px-2 py-1 rounded-md">Continue</button>
+                                        </h3>
+                                        <div className="space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar pr-2">
+                                        {history.map((msg, idx) => (
+                                            <div key={idx} className={`glass-card p-3 rounded-lg relative group text-sm ${msg.role==='user'?'bg-opacity-20':'bg-opacity-10'}`}>
+                                                 <div className="font-semibold mb-1.5 text-xs opacity-70 flex items-center gap-1">
+                                                    {msg.role==='user'?'👤 You':'🤖 AI'}:
+                                                </div>
+                                                {msg.role === 'user' ?
+                                                    (<div className="whitespace-pre-wrap break-words">{msg.content}</div>) :
+                                                    (<MarkdownRenderer content={msg.content} />)
+                                                }
+                                            </div>
+                                        ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            </div>
+                        </>
                     )}
-
 
                     {loading && showTypingIndicator && (
                         <div className="flex justify-start mb-4">
@@ -566,6 +715,5 @@ const ChatView: React.FC<ChatViewProps> = ({
         </div>
     );
 };
-
 
 export default ChatView;
