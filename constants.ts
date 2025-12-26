@@ -29,6 +29,8 @@ export const modelsByProvider: { [key: string]: Model[] } = {
   groq: [
     { id: 'groq-llama-70b', name: 'Groq Llama 70b', provider: 'groq', endpoint: 'llama-3.3-70b-versatile' },
     { id: 'groq-llama-8b', name: 'Groq Llama 8b', provider: 'groq', endpoint: 'llama3-8b-8192' },
+    { id: 'groq-gpt-oss-120b', name: 'Groq OpenAI GPT OSS 120b', provider: 'groq', endpoint: 'openai/gpt-oss-120b' },
+    { id: 'groq-llama-3.1-8b-instant', name: 'Groq Llama 3.1 8b instant', provider: 'groq', endpoint: 'llama-3.1-8b-instant' },
   ],
   deepseek: [
     { id: 'deepseek-v2', name: 'DeepSeek V2', provider: 'deepseek', endpoint: 'deepseek-chat' },
