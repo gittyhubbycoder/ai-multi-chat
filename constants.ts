@@ -24,7 +24,10 @@ export const modelsByProvider: { [key: string]: Model[] } = {
     { id: 'gemma-3-27b', name: 'Gemma 3 27B', provider: 'google', endpoint: 'gemma-3-27b' },
   ],
   cerebras: [
-    { id: 'cerebras-llama', name: 'Cerebras Llama', provider: 'cerebras', endpoint: 'llama3.3-70b' },
+    { id: 'cerebras-llama-3.3-70b', name: 'Llama 3.3 70b', provider: 'cerebras', endpoint: 'llama3.3-70b' },
+    { id: 'cerebras-llama-3.1-8b', name: 'Llama 3.1 8b', provider: 'cerebras', endpoint: 'llama3.1-8b' },
+    { id: 'cerebras-gpt-oss-120b', name: 'GPT OSS 120b', provider: 'cerebras', endpoint: 'gpt-oss-120b' },
+    { id: 'cerebras-qwen-3-32b', name: 'Qwen 3 32b', provider: 'cerebras', endpoint: 'qwen-3-32b' },
   ],
   groq: [
     { id: 'groq-llama-70b', name: 'Groq Llama 70b', provider: 'groq', endpoint: 'llama-3.3-70b-versatile' },
@@ -38,6 +41,9 @@ export const modelsByProvider: { [key: string]: Model[] } = {
   mistral: [
     { id: 'mistral-large', name: 'Mistral Large', provider: 'mistral', endpoint: 'mistral-large-latest' },
     { id: 'mistral-small', name: 'Mistral Small', provider: 'mistral', endpoint: 'mistral-small-latest' },
+    { id: 'mistral-tiny', name: 'Mistral Tiny', provider: 'mistral', endpoint: 'mistral-tiny-latest' },
+    { id: 'magistral-medium', name: 'Magistral Medium', provider: 'mistral', endpoint: 'magistral-medium-latest' },
+    { id: 'magistral-small', name: 'MAgistral Small', provider: 'mistral', endpoint: 'magistral-small-latest' },
   ],
   alibaba: [
     { id: 'alibaba-qwen-turbo', name: 'Alibaba Qwen Turbo', provider: 'alibaba', endpoint: 'qwen-turbo' },
