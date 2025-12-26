@@ -15,7 +15,8 @@ export const providers: Provider[] = [
 
 export const modelsByProvider: { [key: string]: Model[] } = {
   google: [
-    { id: 'gemini-3-flash-preview', name: 'Gemini  3 Flash Preview', provider: 'google', endpoint: 'gemini-3-flash' },
+    { id: 'gemini-3-flash-preview', name: 'Gemini  3 Flash Preview', provider: 'google', endpoint: 'gemini-3-flash-preview' },
+    { id: 'gemini-3-pro-preview', name: 'Gemini  3 Pro Preview', provider: 'google', endpoint: 'gemini-3-pro-preview' },
     { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', provider: 'google', endpoint: 'gemini-2.5-flash' },
     { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash', provider: 'google', endpoint: 'gemini-2.0-flash' },
     { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'google', endpoint: 'gemini-2.5-pro' },
