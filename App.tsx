@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
 import AuthScreen from './components/AuthScreen';
@@ -46,20 +47,12 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (currentChatId) {
-      localStorage.setItem('lastOpenChatId', currentChatId);
-    }
-  }, [currentChatId]);
-
   const loadUserData = async (userId: string) => {
     const { data: chatsData } = await supabase.from('chats').select('*').eq('user_id', userId).order('created_at', { ascending: false });
     
     if (chatsData && chatsData.length > 0) {
       setChats(chatsData);
-      const lastChatId = localStorage.getItem('lastOpenChatId');
-      const chatExists = lastChatId && chatsData.some(c => c.id === lastChatId);
-      setCurrentChatId(chatExists ? lastChatId : chatsData[0].id);
+      setCurrentChatId(chatsData[0].id);
     } else {
       await createNewChat(userId);
     }
