@@ -38,24 +38,29 @@ const ChatView: React.FC<ChatViewProps> = ({
     const [analyzingBias, setAnalyzingBias] = useState(false);
     const [biasAnalysis, setBiasAnalysis] = useState<BiasAnalysis | null>(null);
 
+    // New state for model selection
     const [selectedProviderId, setSelectedProviderId] = useState<string>(providers[0]?.id || '');
     const [selectedModelId, setSelectedModelId] = useState<string>(modelsByProvider[providers[0]?.id]?.[0]?.id || '');
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const lastChatId = useRef(currentChatId);
 
     const isAdmin = user.email === ADMIN_EMAIL;
     const currentChat = chats.find(c => c.id === currentChatId);
 
+    // Derived state for compare mode
     const compareMode = currentChat?.compare_mode ?? false;
     const selectedModelsForCompare = currentChat?.selected_models ?? [];
     const compareResponses = currentChat?.compare_responses ?? {};
     const focusedModel = currentChat?.focused_model ?? null;
 
     useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [currentChat?.messages, compareResponses, loading]);
+
+    useEffect(() => {
+      // When current chat changes, update the provider/model dropdowns
       if (currentChat && !compareMode) {
         const model = allModels.find(m => m.id === currentChat.model);
         if (model) {
@@ -65,6 +70,7 @@ const ChatView: React.FC<ChatViewProps> = ({
       }
     }, [currentChatId, currentChat, compareMode]);
 
+    // Auto-resize textarea
     useEffect(() => {
         const textarea = inputRef.current;
         if (textarea) {
@@ -73,60 +79,10 @@ const ChatView: React.FC<ChatViewProps> = ({
         }
     }, [input]);
 
-    const updateChat = useCallback(async (chatId: string, updates: Partial<Chat>, reorder: boolean = false) => {
-      setChats(prev => {
-        const updatedChats = prev.map(c => c.id === chatId ? { ...c, ...updates } : c);
-        if (reorder) {
-            const chatToMove = updatedChats.find(c => c.id === chatId);
-            if (chatToMove) {
-                const otherChats = updatedChats.filter(c => c.id !== chatId);
-                return [{ ...chatToMove, ...updates }, ...otherChats];
-            }
-        }
-        return updatedChats;
-      });
+    const updateChat = useCallback(async (chatId: string, updates: Partial<Chat>) => {
+      setChats(prev => prev.map(c => c.id === chatId ? { ...c, ...updates } : c));
       await supabase.from('chats').update(updates).eq('id', chatId);
     }, [setChats]);
-
-
-    // Effect to save scroll position
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        let timeoutId: number | null = null;
-        const handleScroll = () => {
-            if (timeoutId) window.clearTimeout(timeoutId);
-            timeoutId = window.setTimeout(() => {
-                if (container && currentChatId) {
-                    sessionStorage.setItem(`scrollPos-${currentChatId}`, String(container.scrollTop));
-                }
-            }, 150);
-        };
-        container?.addEventListener('scroll', handleScroll, { passive: true });
-        return () => {
-            if (timeoutId) window.clearTimeout(timeoutId);
-            container?.removeEventListener('scroll', handleScroll);
-        };
-    }, [currentChatId]);
-
-    // Effect to restore scroll position or scroll to bottom
-    useEffect(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        
-        const isChatSwitch = lastChatId.current !== currentChatId;
-
-        if (isChatSwitch) {
-            const savedScrollPos = sessionStorage.getItem(`scrollPos-${currentChatId}`);
-            if (savedScrollPos) {
-                container.scrollTop = parseInt(savedScrollPos, 10);
-            } else {
-                container.scrollTop = container.scrollHeight;
-            }
-            lastChatId.current = currentChatId;
-        } else {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [currentChatId, currentChat?.messages, compareResponses]);
 
 
     const deleteChat = async (chatId: string) => {
@@ -295,7 +251,7 @@ const ChatView: React.FC<ChatViewProps> = ({
     
             const assistantMsg: Message = { role: 'assistant', content: responseText, timestamp: new Date().toISOString() };
             const finalMsgs = [...newMsgs, assistantMsg];
-            await updateChat(currentChat.id, { messages: finalMsgs }, true);
+            updateChat(currentChat.id, { messages: finalMsgs });
         } catch (error: any) {
             alert(`Error: ${error.message}`);
         } finally {
@@ -335,7 +291,7 @@ const ChatView: React.FC<ChatViewProps> = ({
         await Promise.all(promises);
     
         const updatedCompareResponses = { ...compareResponses, ...newResponses };
-        await updateChat(currentChat.id, { compare_responses: updatedCompareResponses }, true);
+        updateChat(currentChat.id, { compare_responses: updatedCompareResponses });
     
         setLoading(false);
     };
@@ -353,14 +309,14 @@ const ChatView: React.FC<ChatViewProps> = ({
             timestamp: new Date(Date.now() - (history.length - idx) * 1000).toISOString()
         }));
 
-        await updateChat(currentChatId, {
+        updateChat(currentChatId, {
             compare_mode: false,
             model: modelId,
             messages: convertedMessages,
             selected_models: [],
             compare_responses: {},
             focused_model: null,
-        }, true);
+        });
     }
 
     const analyzeBias = async () => {
@@ -377,9 +333,7 @@ const ChatView: React.FC<ChatViewProps> = ({
         setBiasAnalysis(null);
     
         try {
-            // FIX: Cast the first element of Object.values(compareResponses) to an array of messages.
-            // This resolves a TypeScript error where the compiler inferred the type as 'unknown' and couldn't find the '.filter' method.
-            const lastUserMessage = (Object.values(compareResponses)[0] as { role: 'user' | 'assistant'; content: string }[]).filter(m => m.role === 'user').pop();
+            const lastUserMessage = Object.values(compareResponses)[0].filter(m => m.role === 'user').pop();
             if (!lastUserMessage) {
                 throw new Error("Could not find the user's prompt to analyze.");
             }
@@ -438,6 +392,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                 [{ role: 'user', content: analysisPrompt }]
             );
     
+            // Clean the response to ensure it's valid JSON before parsing
             const cleanedJsonString = analysisJsonStringRaw.replace(/```json/g, '').replace(/```/g, '').trim();
     
             const analysisResult: BiasAnalysis = JSON.parse(cleanedJsonString);
@@ -494,6 +449,8 @@ const ChatView: React.FC<ChatViewProps> = ({
                     </div>
                 </div>
             )}
+
+            {showSidebar && <div className="md:hidden fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-40" onClick={() => setShowSidebar(false)} />}
 
             <div className={`${showSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-50 md:z-auto w-64 glass-dark border-r border-white border-opacity-20 flex flex-col transition-transform h-full`}>
                 <div className="p-3 md:p-4 border-b border-white border-opacity-20 space-y-2">
@@ -618,7 +575,7 @@ const ChatView: React.FC<ChatViewProps> = ({
                 </div>
               )}
               
-                <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-3 md:p-4 custom-scrollbar">
                     {(!currentChat?.messages || currentChat.messages.length === 0) && !compareMode && Object.keys(compareResponses).length === 0 && (
                         <div className="text-center text-gray-300 mt-10 md:mt-20">
                             <div className="text-4xl md:text-6xl mb-4">👋</div>
