@@ -1,14 +1,18 @@
-
 import React, { useEffect, useRef } from 'react';
 
-// Update window declaration to accept the button element
+// Update window declaration to accept the button element and KaTeX
 declare global {
     interface Window {
         copyToClipboard: (button: HTMLButtonElement, text: string) => void;
+        // FIX: Moved marked and katex into the Window interface to correctly extend the global window object.
+        // This resolves TypeScript errors about these properties not existing on 'Window'.
+        marked: {
+            parse: (markdown: string) => string;
+        };
+        katex: {
+            renderToString: (expression: string, options?: object) => string;
+        };
     }
-    const marked: {
-        parse: (markdown: string) => string;
-    };
 }
 
 // Update copy function to provide visual feedback on the button itself
@@ -41,21 +45,46 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     const contentRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (contentRef.current) {
-            let html = marked.parse(content);
-            // Regex to find code blocks and inject a copy button
-            html = html.replace(/<pre><code( class="[^"]*")?>([\s\S]*?)<\/code><\/pre>/g, (match, langClass, code) => {
-                // Decode HTML entities that marked.js might have created
-                const decodedCode = new DOMParser().parseFromString(code, 'text/html').documentElement.textContent || '';
-                
-                // Use JSON.stringify to create a valid JavaScript string literal.
-                // This handles all escaping (quotes, backslashes, newlines, etc.) correctly.
-                const codeAsJsString = JSON.stringify(decodedCode);
+        if (contentRef.current && window.marked && window.katex) {
+            const blockMath: string[] = [];
+            const inlineMath: string[] = [];
+            
+            // 1. Temporarily replace math blocks with placeholders to protect them from the markdown parser
+            let tempContent = content
+                .replace(/\$\$([\s\S]*?)\$\$/g, (match, expression) => {
+                    blockMath.push(expression);
+                    return `__BLOCK_MATH_${blockMath.length - 1}__`;
+                })
+                .replace(/\$([^$]+?)\$/g, (match, expression) => {
+                    inlineMath.push(expression);
+                    return `__INLINE_MATH_${inlineMath.length - 1}__`;
+                });
 
-                // Use single quotes for the onclick attribute to avoid conflicts with the double quotes from JSON.stringify.
+            // 2. Parse the markdown (with placeholders)
+            let html = window.marked.parse(tempContent);
+            
+            // 3. Inject copy buttons for code blocks
+            html = html.replace(/<pre><code( class="[^"]*")?>([\s\S]*?)<\/code><\/pre>/g, (match, langClass, code) => {
+                const decodedCode = new DOMParser().parseFromString(code, 'text/html').documentElement.textContent || '';
+                const codeAsJsString = JSON.stringify(decodedCode);
                 const buttonHtml = `<button class="copy-code-btn" onclick='window.copyToClipboard(this, ${codeAsJsString})'>Copy</button>`;
                 return `<div class="code-block-wrapper">${buttonHtml}<pre><code${langClass || ''}>${code}</code></pre></div>`;
             });
+
+            // 4. Replace math placeholders with KaTeX-rendered HTML
+            html = html.replace(/<p>__BLOCK_MATH_(\d+)__<\/p>/g, (_, index) => { // Marked wraps standalone placeholders in <p>
+                const expression = blockMath[parseInt(index)];
+                return window.katex.renderToString(expression, { displayMode: true, throwOnError: false, output: 'html' });
+            });
+             html = html.replace(/__BLOCK_MATH_(\d+)__/g, (_, index) => { // For cases where it is not wrapped in <p>
+                const expression = blockMath[parseInt(index)];
+                return window.katex.renderToString(expression, { displayMode: true, throwOnError: false, output: 'html' });
+            });
+            html = html.replace(/__INLINE_MATH_(\d+)__/g, (_, index) => {
+                const expression = inlineMath[parseInt(index)];
+                return window.katex.renderToString(expression, { displayMode: false, throwOnError: false, output: 'html' });
+            });
+            
             contentRef.current.innerHTML = html;
         }
     }, [content]);
