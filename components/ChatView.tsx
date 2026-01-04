@@ -136,7 +136,7 @@ const ChatView: React.FC<ChatViewProps> = ({
             compare_mode: newCompareMode,
         };
         if (newCompareMode && selectedModelsForCompare.length === 0) {
-            updates.selected_models = ['gemini-pro', 'groq-llama-70b'];
+            updates.selected_models = ['gemini-3-flash-preview', 'groq-llama-70b'];
         }
         updateChat(currentChatId, updates);
     };
@@ -183,7 +183,7 @@ const ChatView: React.FC<ChatViewProps> = ({
 
         setEnhancing(true);
         try {
-            const enhancementInstruction = `You are a prompt-enhancing assistant. Rewrite the following user prompt to be more detailed, clear, concise and effective for a large language model. Return ONLY the enhanced prompt, without any explanation, preamble, or markdown formatting like quotes.
+            const enhancementInstruction = `You are a prompt-enhancing assistant. Rewrite the following user prompt to be more detailed, clear, and effective for a large language model. Return ONLY the enhanced prompt, without any explanation, preamble, or markdown formatting like quotes, bolds, underlines or anything of the sort.
             
             Original prompt: "${input}"`;
 
