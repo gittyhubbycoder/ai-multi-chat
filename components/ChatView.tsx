@@ -383,7 +383,7 @@ const ChatView: React.FC<ChatViewProps> = ({
             IMPORTANT: Your entire response must be ONLY the raw JSON object, without any surrounding text, explanations, or markdown code fences (like \`\`\`json). The response must start with "{" and end with "}".
             `;
     
-            const analyzerModel = allModels.find(m => m.id === 'cerebras-llama-70b');
+            const analyzerModel = allModels.find(m => m.id === 'cerebras-llama-3.3-70b');
             if (!analyzerModel) throw new Error("Analyzer model (Cerebras Llama) is not configured.");
             
             const analysisJsonStringRaw = await callGenericApi(
