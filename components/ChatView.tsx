@@ -183,11 +183,11 @@ const ChatView: React.FC<ChatViewProps> = ({
 
         setEnhancing(true);
         try {
-            const enhancementInstruction = `You are a prompt-enhancing assistant. Rewrite the following user prompt to be more detailed, clear, and effective for a large language model. Your goal is to elicit a high-quality, comprehensive response. Return ONLY the enhanced prompt, without any explanation, preamble, or markdown formatting like quotes.
+            const enhancementInstruction = `You are a prompt-enhancing assistant. Rewrite the following user prompt to be more detailed, clear, concise and effective for a large language model. Return ONLY the enhanced prompt, without any explanation, preamble, or markdown formatting like quotes.
             
             Original prompt: "${input}"`;
 
-            const enhancerModel = allModels.find(m => m.id === 'gemini-flash');
+            const enhancerModel = allModels.find(m => m.id === 'gemini-2.5-flash');
             if (!enhancerModel) throw new Error("Enhancer model is not configured.");
             
             const enhancedText = await callGenericApi(
